@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play with Pepe</title>
+    <!-- 글꼴 : Pixelify Sans = 사이트 전체 / DotGothic16 = 창 안 본문(p) -->
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pinball.css">   <!-- 핀볼 -->
+</head>
+<body>
+
+    <!-- 크기 단위 : 1rem = 화면 너비의 1% (style.css 맨 위)
+         → 피그마 프레임 너비가 2000px 이라면 피그마 px ÷ 20 = rem -->
+
+    <!-- =====================================================
+         부팅 화면 (사이트 켜면 맨 처음, 모든 것 위에 덮임 · script.js 의 "부팅 화면")
+         1) BIOS : 글자가 한 줄씩 올라감 (클릭하면 건너뜀)
+         2) 로그인 : "확인" 누르면 전체화면 + 시작음 → 바탕화면 / "취소" 누르면 전원 끈 화면
+         BIOS 글 내용은 script.js 의 BIOS_LINES 에서 바꿈
+         ===================================================== -->
+    <div id="boot">
+        <div class="boot-bios">
+            <img class="boot-bios-logo" src="images/icon-windowpepe.png" alt="">
+            <pre id="boot-bios-text"></pre>
+        </div>
+        <!-- 로그인 : 윈도우 98 로그인 창 (사이트 창과 같은 회색 입체 + 주황→초록 제목줄) -->
+        <div class="boot-login" hidden>
+            <div class="boot-dlg bevel">
+                <div class="boot-dlg-bar">Welcome to Pepe 98</div>
+                <div class="boot-dlg-body">
+                    <img src="images/icon-windowpepe.png" alt="">
+                    <div class="boot-dlg-form">
+                        <p id="boot-state">Play with Pepe 에 오신 걸 환영합니다.<br>확인을 누르면 전체화면으로 시작해요.</p>
+                        <div class="boot-dlg-row"><span>사용자 이름:</span><div>Pepe</div></div>
+                        <div class="boot-dlg-row"><span>암호:</span><div>********</div></div>
+                    </div>
+                    <div class="boot-dlg-btns">
+                        <button class="btn" id="boot-user">확인</button>
+                        <button class="btn" id="boot-off">취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-wrap">
+
+        <!-- 스크롤되는 영역 -->
+        <div id="screen">
+
+            <!-- 바탕화면 (배경 이미지는 style.css 의 #desktop 에서) -->
+            <div id="desktop">
+
+                <!-- ▼ 소리 버튼 (오른쪽 위) : 사이트 전체 소리 켜기/끄기 (Music · Brett 노래 · 효과음 전부)
+                     꺼짐/켜짐 사진 경로만 바꾸면 됨. 처음엔 켜짐(class="on") -->
+                <button id="sound-btn" class="btn on" title="소리 켜기/끄기">
+                    <img class="sound-off" src="images/soundoff.png" alt="소리 꺼짐">
+                    <img class="sound-on"  src="images/soundon.png"  alt="소리 켜짐">
+                </button>
+
+                <!-- =================================================
+                     아이콘
+                     - data-window : 더블클릭하면 열릴 창의 id
+                     - data-col : 몇 번째 열 (1 = 맨 왼쪽, 10 = 맨 오른쪽)
+                     - data-row : 몇 번째 행 (1 = 맨 위, 5 = 맨 아래)
+                     - 칸 크기는 script.js 의 GRID 에서 조절
+                     - 드래그로 옮기면 놓은 곳에서 가장 가까운 빈 칸에 들어감
+                     - 아이콘 추가 = <div class="icon">...</div> 한 덩어리 복사
+                     ================================================= -->
+                <div class="icon" data-window="win-whatispepe" data-col="1" data-row="3">
+                    <img src="images/icon-What is PEPE.png" alt="">
+                    <span>What is<br>PEPE</span>
+                </div>
+
+                <div class="icon" data-window="win-meditation" data-col="1" data-row="4">
+                    <img src="images/icon-meditation.png" alt="">
+                    <span>Meditation</span>
+                </div>
+
+                <div class="icon" data-window="win-brett" data-col="2" data-row="4">
+                    <img src="images/icon-brett.png" alt="">
+                    <span>Brett</span>
+                </div>
+
+                <div class="icon" data-window="win-theater" data-col="3" data-row="4">
+                    <img src="images/icon-theater.png" alt="">
+                    <span></span>
+                </div>
+
+                <div class="icon" data-window="win-punch" data-col="1" data-row="5">
+                    <img src="images/icon-punch.png" alt="">
+                    <span>Punch</span>
+                </div>
+
+                <div class="icon" data-window="win-music" data-col="2" data-row="5">
+                    <img src="images/icon-music.png" alt="">
+                    <span>Music</span>
+                </div>
+
+                <div class="icon" data-window="win-pepecoin" data-col="3" data-row="5">
+                    <img src="images/icon-pepecoin.png" alt="">
+                    <span>Pepe Coin</span>
+                </div>
+
+                <div class="icon" data-window="win-paint" data-col="4" data-row="5">
+                    <img src="images/icon-painting.png" alt="">
+                    <span>BKpaint</span>
+                </div>
+
+                <div class="icon" data-window="win-andy" data-col="5" data-row="5">
+                    <img src="images/icon-andy.png" alt="">
+                    <span>Andy</span>
+                </div>
+
+                <!-- 핀볼 : 가운데 페페를 맞혀서 점수 벌기 (pinball.js) -->
+                <div class="icon" data-window="win-pinball" data-col="6" data-row="5">
+                    <img src="images/icon-pinball.png" alt="">
+                    <span>Pinball</span>
+                </div>
+
+                <!-- 휴지통 : 아이콘을 여기로 끌어다 놓으면 버려짐
+                     data-full = 휴지통에 뭔가 있을 때 바뀌는 사진 (없으면 빈 휴지통 사진 그대로) -->
+                <div class="icon" id="recycle-bin" data-window="win-recycle" data-col="10" data-row="4"
+                     data-full="images/icon-Recycle_Bin-full.png">
+                    <img src="images/icon-Recycle_Bin.svg" alt="">
+                    <span>Recycle Bin</span>
+                </div>
+
+                <!-- Landwolf : 창 대신 보라색 필터 + 담배 메시지 창 (data-action="vapor", 맨 아래 #smoke-tpl)
+                     data-window 는 창이 없어도 남겨둠 → Music 재생 중 춤추는 gif 로 바뀔 때 이걸로 찾음 -->
+                <div class="icon" data-window="win-landwolf" data-action="vapor" data-col="10" data-row="5">
+                    <img src="images/icon-landwolf.png" alt="">
+                    <span>Landwolf</span>
+                </div>
+
+                <!-- =================================================
+                     창 (Window)
+                     - id 를 아이콘의 data-window 와 똑같이 맞추면 연결됨
+                     - data-title : 창 제목 / 작업표시줄 이름
+                     - 열리면 항상 화면 정중앙에 뜨고, 스크롤해도 고정됨
+                     - 창 크기 기본값은 style.css 의 --win-w / --win-h
+                       (창 하나만 다르게 하려면 style="width: 50rem; height: 30rem;" 추가)
+                     - .window-body 안에 자유롭게 사진/글/영상 넣기
+                     ================================================= -->
+                <div class="window" id="win-whatispepe" data-title="What is PEPE">
+                    <div class="window-body">
+                        <h1>What is PEPE?</h1>
+                        <img src="images/whatispepeimg1.jfif" alt="" style="width: 70%;">
+                        <p>Pepe the Frog is a cartoon character created by American artist Matt Furie in 2005 for his comic series *Boy’s Club*. <br>
+                            With his green face, big eyes, and expressive reactions, Pepe became a popular internet meme used to convey feelings such as happiness, sadness, and frustration. <br>
+                            Over time, online communities adapted Pepe into countless variations.<br>
+                            Although some versions became associated with political and extremist groups, Pepe is also widely used in everyday memes without those meanings.<br>
+                            His significance often depends on the context in which he appears.</p>
+
+                        <hr>
+
+                        <p>This website was created by</p>
+                        <p><a href="https://github.com/gon06123" target="_blank">https://github.com/gon06123</a></p>
+                        <p>and completed on 2026/10/22 <br><br>
+                        It was made as a school project, and you can enjoy a variety of activities with Pepe here.<br><br>
+                        Thank you for reading!</p>
+                    </div>
+                </div>
+
+                <div class="window" id="win-meditation" data-title="Meditation" style="width: 50rem; height: auto;">
+                    <div class="window-body full">
+                        <!-- 클릭하면 화면 전체가 픽셀 원으로 덮이고 img2 + 반딧불이가 뜸 (맨 아래 #bg-circle) -->
+                        <img id="meditation-img" src="images/meditation-img1.png" alt="">
+                    </div>
+                </div>
+
+                <!-- Brett 리듬 게임 : 클릭하면 시작, 박자에 맞춰 화면/스페이스바 누르기 (script.js 의 "Brett 리듬 게임") -->
+                <div class="window" id="win-brett" data-title="Brett" data-fx="glitch" data-close-only>
+                    <div class="window-body brett">
+                        <canvas id="brett-canvas" width="640" height="640" aria-label="리듬에 맞춰 주먹을 흔드는 선글라스 낀 파란 개구리"></canvas>
+                        <div class="brett-row"><label for="brett-bpm">템포</label><input id="brett-bpm" type="range" min="80" max="150" value="115"><output id="brett-bpm-out">115</output></div>
+                        <div class="brett-row"><label for="brett-eng">신남</label><input id="brett-eng" type="range" min="0" max="100" value="75"><output id="brett-eng-out">75</output></div>
+                    </div>
+                </div>
+
+                <div class="window" id="win-theater" data-title="Theater">
+                    <div class="window-body"><p>Theater 내용</p></div>
+                </div>
+
+                <div class="window" id="win-punch" data-title="Punch">
+                    <div class="window-body"><p>Punch 내용</p></div>
+                </div>
+
+                <!-- 음악 플레이어 (script.js 의 "Music 플레이어")
+                     - 노래 추가 = 아래 플레이리스트에 <li data-src="sounds/파일.mp3">제목</li> 한 줄 추가
+                     - data-icon / data-icon-src : 그 곡이 재생되는 동안 해당 바탕화면 아이콘 사진을 바꿈 (멈추면 원래대로)
+                       여러 개는 띄어쓰기로 구분, 같은 순서끼리 짝 (첫 번째 창 id ↔ 첫 번째 사진)
+                     - data-icon-scale : 바뀐 사진 크기 배율 (같은 순서, 1 = 기본 / 0.6 = 60%) -->
+                <div class="window" id="win-music" data-title="Music">
+                    <div class="window-body music">
+                        <!-- 검정 액정 : 제목(흐르는 글자) · 시간 · 이퀄라이저 막대 -->
+                        <div class="music-screen">
+                            <div class="music-info">
+                                <span id="music-state">■</span>
+                                <span id="music-time">00:00</span>
+                                <div class="music-title"><span id="music-title">노래를 고르세요</span></div>
+                            </div>
+                            <canvas id="music-viz"></canvas>
+                        </div>
+
+                        <input id="music-seek" type="range" min="0" max="1000" value="0" aria-label="재생 위치">
+
+                        <div class="music-ctrl">
+                            <button class="btn" id="music-prev" title="이전 곡">|◀</button>
+                            <button class="btn" id="music-play" title="재생 / 정지">▶</button>
+                            <button class="btn" id="music-next" title="다음 곡">▶|</button>
+                            <label class="music-vol">볼륨 <input id="music-vol" type="range" min="0" max="100" value="70"></label>
+                        </div>
+
+                        <!-- 플레이리스트 : 더블클릭하면 그 곡 재생 -->
+                        <ol id="music-list">
+                            <li data-src="sounds/aurectheme-electro-swing-596999.mp3"
+                                data-icon="win-pepecoin win-brett win-landwolf win-andy win-punch win-meditation"
+                                data-icon-src="images/dancepepe1.gif images/brettdance1.gif images/landwolfdance1.gif images/andydance1.gif images/pepedance2.gif images/pepedance3.gif"
+                                data-icon-scale="1 1 1 0.6 0.6 1">
+                                AurecTheme - Electro Swing</li>
+                        </ol>
+                        <audio id="music-audio"></audio>
+                    </div>
+                </div>
+
+                <div class="window" id="win-pepecoin" data-title="Pepe Coin">
+                    <!-- 실시간 PEPE 캔들 차트 (바이낸스 PEPE/USDT, script.js 의 "Pepe Coin 차트") -->
+                    <div class="window-body coin">
+                        <div class="coin-head">
+                            <b>PEPE / USDT</b>
+                            <span id="coin-price">-</span>
+                            <span id="coin-change">-</span>
+                        </div>
+                        <!-- 캔들 하나 = 5분 / 15분 / 1시간 / 4시간 / 1일 -->
+                        <div class="coin-tools">
+                            <button class="btn" data-interval="5m">5m</button>
+                            <button class="btn" data-interval="15m">15m</button>
+                            <button class="btn pressed" data-interval="1h">1h</button>
+                            <button class="btn" data-interval="4h">4h</button>
+                            <button class="btn" data-interval="1d">1d</button>
+                            <!-- 바탕화면 gif 전환 (상승 pepecoin1 ↔ 하락 pepecoin2) -->
+                            <button class="btn" id="coin-bg">배경 ▲</button>
+                        </div>
+                        <div class="coin-area"><canvas id="coin-canvas"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- 그림판
+                     - 도구 아이콘 : images/icon-pen.png, icon-eraser.png, icon-fill.png -->
+                <div class="window" id="win-paint" data-title="BKpaint">
+                    <div class="window-body paint">
+                        <div class="paint-tools">
+                            <button class="btn pressed" data-tool="pen">
+                                <img src="images/icon-pen.png" alt="" onerror="this.remove()">
+                            </button>
+                            <button class="btn" data-tool="eraser">
+                                <img src="images/icon-eraser.png" alt="" onerror="this.remove()">
+                            </button>
+                            <button class="btn" data-tool="fill">
+                                <img src="images/icon-fill.png" alt="" onerror="this.remove()">
+                            </button>
+                            <!-- 붓 굵기 (px) -->
+                            <select id="paint-size">
+                                <option value="6">가늘게</option>
+                                <option value="14">보통</option>
+                                <option value="28">굵게</option>
+                                <option value="50" selected>아주 굵게</option>
+                            </select>
+                            <button class="btn" id="paint-clear">전체 지우기</button>
+                            <button class="btn" id="paint-save">저장</button>
+                            <button class="btn" id="paint-reset">배경 취소</button>
+                        </div>
+
+                        <div class="paint-area"><canvas id="paint-canvas"></canvas></div>
+
+                        <div class="paint-palette">
+                            <!-- 지금 고른 색 : 누르면 색 선택 패널이 열림 -->
+                            <button id="paint-current" title="색 고르기"></button>
+                            <!-- ▼ 팔레트 색 : data-color 값만 바꾸면 됨 -->
+                            <div class="swatches">
+                                <i data-color="#000000"></i><i data-color="#808080"></i><i data-color="#ffffff"></i>
+                                <i data-color="#e00000"></i><i data-color="#DC8D1B"></i><i data-color="#ffe600"></i>
+                                <i data-color="#3fb43f"></i><i data-color="#00AA88"></i><i data-color="#1e6fe0"></i>
+                                <i data-color="#7a3fd1"></i><i data-color="#ff7fc6"></i><i data-color="#8b4a1c"></i>
+                            </div>
+                        </div>
+
+                        <!-- 색 선택 패널 -->
+                        <div id="color-panel" class="bevel" hidden>
+                            <div class="color-head">
+                                <span>색 선택</span>
+                                <button class="btn color-close">×</button>
+                            </div>
+                            <div class="cp-sv"><i class="cp-sv-dot"></i></div>   <!-- 채도·밝기 -->
+                            <div class="cp-hue"><i class="cp-hue-dot"></i></div> <!-- 색상 -->
+                            <div class="cp-foot">
+                                <div class="cp-preview"></div>
+                                <input class="cp-hex" maxlength="7" spellcheck="false">
+                                <button class="btn cp-ok">확인</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="window" id="win-andy" data-title="Andy">
+                    <div class="window-body"><p>Andy 내용</p></div>
+                </div>
+
+                <!-- 핀볼 : 안의 내용은 pinball.js 가 자동으로 만듦
+                     - 가운데 페페 그림·점수·대사는 pinball.js 맨 위에서 바꾸기
+                     - 창 크기는 pinball.css 의 #win-pinball -->
+                <div class="window" id="win-pinball" data-title="Pepe Pinball" data-fx="crt">
+                    <div class="window-body pinball" id="pinball-root"></div>
+                </div>
+
+                <div class="window" id="win-recycle" data-title="Recycle Bin">
+                    <div class="window-body">
+                        <div class="recycle-tools">
+                            <button class="btn" id="bin-restore">복원</button>
+                            <button class="btn" id="bin-clear">휴지통 비우기</button>
+                        </div>
+                        <div id="bin-list"><!-- 버린 아이콘이 여기에 자동으로 생김 --></div>
+                        <p id="bin-empty-msg">휴지통이 비어 있습니다.</p>
+                    </div>
+                </div>
+
+                <!-- 시작 메뉴 → Shut Down... 누르면 뜨는 확인 창 -->
+                <div class="window" id="win-shutdownpepe" data-title="Shut Down PEPE" data-no-buttons>
+                    <div class="window-body shutdown">
+                        <img src="images/shutdown.jpg" alt="">
+                        <p>정말 페페를 떠나시겠습니까?</p>
+                        <div class="shutdown-btns">
+                            <button class="btn" id="shutdown-ok">떠나기</button>
+                            <button class="btn" id="shutdown-cancel">취소</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 커스텀 스크롤바 (오른쪽) -->
+        <div id="scrollbar">
+            <button class="btn sb-arrow" id="sb-up"><i class="arrow up"></i></button>
+            <div id="sb-track"><div id="sb-thumb" class="btn"></div></div>
+            <button class="btn sb-arrow" id="sb-down"><i class="arrow down"></i></button>
+        </div>
+
+        <!-- 시작 메뉴 -->
+        <div id="start-menu" class="bevel">
+            <div class="start-side">playwith<b>PEPE</b></div>
+            <!-- 메뉴 항목 : <img> 경로만 바꾸면 아이콘 변경 (사진 없으면 빈칸으로 자리만 유지) -->
+            <ul>
+                <li data-window="win-meditation"><img src="images/icon-meditation.png" alt="">Meditation</li>
+                <li data-window="win-music"><img src="images/icon-music.png" alt="">Music</li>
+                <li data-window="win-pepecoin"><img src="images/icon-pepecoin.png" alt="">Pepe Coin</li>
+                <li data-window="win-pinball"><img src="images/icon-pinball.png" alt="">Pepe Pinball</li>
+                <li class="sep"></li>
+                <li data-window="win-recycle"><img src="images/icon-Recycle_Bin.svg" alt="">Recycle Bin</li>
+                <li class="sep"></li>
+                <li data-window="win-shutdownpepe"><img src="images/icon-shutdown.png" alt="">Shut Down...</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===================== 작업 표시줄 ===================== -->
+    <!-- #taskbar = 맨 아래 깔리는 회색 바닥 / .taskbar-box = 그 위에 올라간 입체 박스 -->
+    <div id="taskbar">
+        <div class="taskbar-box bevel">
+            <button id="start-btn" class="btn">
+                <img src="images/icon-windowpepe.png" alt=""> Start
+            </button>
+            <div id="tasks"><!-- 열린 창 버튼이 여기에 자동으로 생김 --></div>
+            <div id="clock">00:00 AM</div>
+        </div>
+    </div>
+
+    <!-- 전원 끄기 후 화면 (브라우저가 탭 닫기를 막았을 때 보임, 클릭하면 다시 켜짐) -->
+    <div id="off-screen" hidden>
+        <p>It's now safe to turn off<br>your computer.</p>
+    </div>
+
+    <!-- Brett : 시작하면 불이 꺼지듯 어두워지는 막 + 바탕화면까지 퍼지는 조명
+         (작업표시줄보다 뒤에 있어야 불 꺼졌을 때 작업표시줄을 덮음) -->
+    <div id="club-dark"></div>
+    <canvas id="disco-light"></canvas>
+
+    <!-- Meditation 사진 클릭 시 화면 전체를 덮는 화면 (클릭하면 닫힘)
+         - 순서(아래→위) : 남색 픽셀 배경 → 뜨는 사진 → 반딧불이
+         - 색·칸 크기·속도·반딧불이 설정은 script.js 의 Meditation 구역 맨 위
+         - 뜨는 사진은 아래 img 경로만 바꾸면 됨 -->
+    <canvas id="bg-circle"></canvas>
+    <img id="bg-circle-img" src="images/meditation-img2.png" alt="">
+    <canvas id="firefly-canvas"></canvas>
+    <!-- Meditation 음악 : 유튜브 플레이어 (화면엔 안 보이고 소리만, 처음 틀 때 script.js 가 이 자리에 만듦) -->
+    <div id="med-yt-box"><div id="med-yt"></div></div>
+
+    <!-- Landwolf : 보라색 필터 + 담배 권하는 메시지 창 (script.js 의 "Landwolf")
+         - 메시지 창은 아래 template 을 복사해서 만듦 → 글·사진·버튼 이름은 여기서만 바꾸면 됨
+         - "거절" 누를 때마다 창이 2개 → 3개 → 4개… 씩 늘어남 -->
+    <div id="vapor-filter"></div>
+    <!-- 취한 효과 : 화면이 가로로만 크게 출렁이게 하는 SVG 필터 (style.css 의 body.drunk 에서 씀)
+         - 빨강이 진하고 옅은 가로 줄무늬(물결 그림)를 위로 흘려보내고, 그 빨강 값만큼 화면을 좌우로 밀어냄
+           → 줄마다 밀리는 정도가 달라서 일렁이고, 세로로는 안 움직임
+         - 노이즈를 매번 새로 만드는 대신 그림 한 장을 움직이기만 해서 가벼움 (렉 줄이기)
+         - scale = 좌우로 밀리는 세기, dur = 물결이 흘러가는 시간,
+           물결 개수 = 그림 속 y2 값 (33.3 = 화면에 물결 3개, 50 = 2개로 더 큼직) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="drunk-wave" x="-10%" y="0" width="120%" height="100%" primitiveUnits="objectBoundingBox">
+            <feImage preserveAspectRatio="none" x="0" y="0" width="1" height="2" result="wave"
+                     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none'><linearGradient id='g' x1='0' y1='0' x2='0' y2='33.3' gradientUnits='userSpaceOnUse' spreadMethod='repeat'><stop offset='0' stop-color='rgb(128,128,0)'/><stop offset='.125' stop-color='rgb(218,128,0)'/><stop offset='.25' stop-color='rgb(255,128,0)'/><stop offset='.375' stop-color='rgb(218,128,0)'/><stop offset='.5' stop-color='rgb(128,128,0)'/><stop offset='.625' stop-color='rgb(37,128,0)'/><stop offset='.75' stop-color='rgb(0,128,0)'/><stop offset='.875' stop-color='rgb(37,128,0)'/><stop offset='1' stop-color='rgb(128,128,0)'/></linearGradient><rect width='100' height='200' fill='url(%23g)'/></svg>">
+                <animate attributeName="y" from="0" to="-1" dur="9s" repeatCount="indefinite"/>
+            </feImage>
+            <feDisplacementMap in="SourceGraphic" in2="wave" scale="0.025" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+    </svg>
+    <template id="smoke-tpl">
+        <div class="window open smoke-msg">
+            <div class="title-bar">
+                <span class="title-text">(1) SYSTEM MESSAGE</span>
+            </div>
+            <div class="window-body shutdown">
+                <img src="images/landwolfsmoke.png" alt="">
+                <p>Landwolf가 무언가 권합니다.<br>받으시겠습니까?</p>
+                <div class="shutdown-btns">
+                    <button class="btn smoke-yes">받기</button>
+                    <button class="btn smoke-no">거절</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+    <script src="pinball.js"></script>   <!-- 핀볼 (script.js 다음에) -->
+</body>
+</html>

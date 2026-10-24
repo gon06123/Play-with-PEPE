@@ -1,0 +1,1072 @@
+/* =========================================================
+   크기 기준 : 1rem = 화면 너비의 1%
+   → 창 크기가 바뀌어도 피그마 디자인 비율 그대로 커지고 작아짐
+   ========================================================= */
+html { font-size: 1vw; }
+
+/* =========================================================
+   기본 색상 / 크기 - 여기만 바꿔도 전체 톤 변경
+   ========================================================= */
+:root {
+    --gray: #c3c3c3;        /* 창·버튼 회색 */
+    --light: #ffffff;       /* 밝은 테두리 */
+    --shadow: #919293;      /* 어두운 테두리 */
+    --dark: #4F5454;        /* 가장 어두운 테두리 */
+    --title: linear-gradient(90deg, #DC8D1B, #40DE28);   /* 활성 창 제목줄 · 선택 표시 (주황 → 초록) */
+    --title-off: #808080;   /* 비활성 창 제목줄 */
+    --sunken: var(--shadow) var(--light) var(--light) var(--shadow);   /* 움푹 들어간 칸 테두리 색 (border-color 용) */
+
+    --bv: 0.15rem;          /* 입체 테두리 한 겹 두께 (키우면 전체 테두리가 더 두꺼워짐) */
+    --win-gap: 0.3rem;     /* 창 안쪽 회색 여백 (바깥 테두리·제목줄·내용 사이 간격 통일) */
+    --taskbar-h: 3.1rem; /* 작업표시줄 높이 */
+    --scrollbar-w: 1.7rem; /* 스크롤바 너비 */
+    --desktop-h: 53rem;     /* 바탕화면 전체 높이 (늘리면 스크롤 생김) */
+    --win-w: 54rem;         /* 창 기본 너비 */
+    --win-h: 34rem;         /* 창 기본 높이 */
+
+    /* 영문·숫자 = 픽셀 폰트, 한글 = 맑은 고딕 (픽셀 폰트에 한글이 없어서 자동으로 넘어감) */
+    --font: "Pixelify Sans", "Malgun Gothic", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+/* 버튼·입력칸은 기본적으로 글꼴을 물려받지 않아서 직접 지정 */
+button, input, select { font-family: inherit; }
+
+/* 창 안 제목·본문 글자 */
+h1 { font-size: 4rem; line-height: 0.5; }
+p {
+    font-size: 1.5rem;
+    line-height: 1.5;
+    font-family: "DotGothic16", sans-serif;
+}
+
+/* 구분선 <hr> : 윈도우식 움푹 파인 두 줄 선 */
+hr {
+    border: 0;
+    border-top: 0.15rem solid var(--shadow);
+    border-bottom: 0.15rem solid var(--light);
+    margin: 2rem 0;
+}
+
+/* 텍스트 드래그했을 때 선택 영역 색 */
+::selection { background: #40DE28; color: #000; }
+
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;       /* 브라우저 기본 스크롤바 제거 */
+}
+
+body {
+    font-family: var(--font);
+    font-size: 1rem;
+    user-select: none;
+    background: #000;
+}
+
+/* ================= 부팅 화면 (BIOS → 로그인) ================= */
+/* 모든 것(전원 끈 화면 20000 포함) 위에 덮임. 로그인하면 서서히 사라짐 */
+#boot { position: fixed; inset: 0; z-index: 30000; background: #000; cursor: pointer; transition: opacity 0.8s; }
+#boot.out { opacity: 0; pointer-events: none; }
+#boot [hidden] { display: none !important; }
+
+/* 1) BIOS : 검은 화면 흰 글씨 */
+.boot-bios { position: absolute; inset: 0; padding: 4rem 3rem; color: #c8c8c8; font-family: "DotGothic16", "Courier New", monospace; font-size: 1.5rem; line-height: 1.6; }
+.boot-bios pre { margin: 0; font: inherit; white-space: pre-wrap; }
+.boot-bios-logo { position: absolute; right: 3rem; top: 4rem; width: 9rem; image-rendering: pixelated; }
+.boot-bios .hi { color: #fff; }
+.boot-bios .ok { color: #40DE28; }
+.boot-bios .key { color: #ffd84d; }
+.boot-blink { animation: boot-blink 1s steps(1) infinite; }
+@keyframes boot-blink { 50% { opacity: 0; } }
+
+/* 2) 로그인 : 윈도우 98 청록 바탕 + 가운데 로그인 창 (테두리·버튼은 사이트 공통 .bevel / .btn) */
+.boot-login { position: absolute; inset: 0; background: #008080; cursor: default; animation: boot-fade 0.6s; }
+@keyframes boot-fade { from { opacity: 0; } }
+.boot-dlg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40rem; padding: calc(var(--bv) + var(--win-gap)); }
+.boot-dlg-bar { height: 2.4rem; display: flex; align-items: center; padding: 0 0.6rem; color: #fff; font-size: 1.3rem; font-weight: 700; background: var(--title); }
+.boot-dlg-body { display: flex; gap: 1.6rem; padding: 1.6rem 1.4rem 1.2rem; }
+.boot-dlg-body > img { width: 6rem; height: 6rem; object-fit: contain; image-rendering: pixelated; }
+.boot-dlg-form { flex: 1; font-family: "DotGothic16", sans-serif; font-size: 1.3rem; }
+.boot-dlg-form p { margin: 0 0 1.2rem; font-size: inherit; line-height: 1.5; }
+.boot-dlg-row { display: grid; grid-template-columns: 8rem 1fr; align-items: center; margin-bottom: 0.7rem; }
+.boot-dlg-row div { height: 2.2rem; display: flex; align-items: center; padding: 0 0.5rem; font-family: var(--font); background: #fff;
+                    border: var(--bv) solid; border-color: var(--sunken); box-shadow: inset var(--bv) var(--bv) var(--dark); }
+.boot-dlg-btns { display: flex; flex-direction: column; gap: 0.6rem; }
+.boot-dlg-btns .btn { min-width: 7rem; height: 2.4rem; font-size: 1.15rem; }
+
+/* ================= 화면 / 스크롤 영역 ================= */
+#screen-wrap {
+    position: relative;
+    display: flex;
+    height: calc(100% - var(--taskbar-h));
+}
+
+#screen {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;  /* 기본 스크롤바 숨김 (Firefox) */
+}
+#screen::-webkit-scrollbar { display: none; }  /* (Chrome, Edge) */
+
+/* ================= 바탕화면 ================= */
+#desktop {
+    position: relative;
+    height: var(--desktop-h);
+    min-height: 100%;
+    background-color: #3a6ea5;
+    background-image: url("images/background.jpg");   /* 기본 배경 (사진이 없으면 위 파란색) */
+    background-size: cover;
+    background-position: center top;
+    overflow: hidden;
+}
+
+/* ================= 소리 버튼 ================= */
+#sound-btn {
+    position: absolute;
+    top: 0.6rem;
+    right: 2.2rem;
+    width: 5.5rem;
+    height: 4.1rem;
+    padding: 0.4rem;
+}
+
+#sound-btn img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* 꺼져 있을 땐 sound-off 사진, 켜지면 sound-on 사진 */
+#sound-btn .sound-on { display: none; }
+#sound-btn.on .sound-on { display: block; }
+#sound-btn.on .sound-off { display: none; }
+
+/* ================= 아이콘 ================= */
+.icon {
+    position: absolute;
+    width: 10rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* 드래그 중인 아이콘 */
+.icon.dragging {
+    opacity: 0.6;
+    z-index: 5;
+}
+
+.icon img {
+    width: 5.5rem;
+    height: 5.5rem;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 0.6rem;
+    transform-origin: center bottom;   /* 커질 때 글자 쪽은 그대로, 위로 커짐 (Music 볼륨) */
+    transition: transform 0.15s;
+}
+
+.icon span {
+    display: inline-block;
+    padding: 0 0.3rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.45rem;
+    white-space: nowrap;
+    text-shadow: 0.1rem 0.1rem 0 #000;
+}
+
+/* 선택된 아이콘 */
+.icon.selected img { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(4); }
+.icon.selected span { background: var(--title); outline: 1px dotted #fff; text-shadow: none; }
+
+/* ================= 공통 입체 테두리 =================
+   튀어나온 상자 = 바깥선(밝음/검정) + 안쪽선(연회색/진회색) 두 겹 */
+
+.bevel, .btn, .window {
+    background: var(--gray);
+    border: var(--bv) solid;
+    border-color: var(--light) var(--dark) var(--dark) var(--light);
+    box-shadow: inset calc(var(--bv) * -1) calc(var(--bv) * -1) var(--shadow),
+                inset var(--bv) var(--bv) #dfdfdf;
+}
+
+.btn {
+    font-size: 1rem;
+    padding: 0 0.6rem;
+    cursor: pointer;
+    color: #000;
+}
+
+.btn:active, .btn.pressed {
+    border-color: var(--dark) var(--light) var(--light) var(--dark);
+    box-shadow: inset var(--bv) var(--bv) var(--shadow),
+                inset calc(var(--bv) * -1) calc(var(--bv) * -1) #dfdfdf;
+    background: #d6d6d6;
+}
+
+/* ================= 창 ================= */
+.window {
+    position: fixed;        /* 스크롤해도 화면에 고정 */
+    width: var(--win-w);
+    height: var(--win-h);
+    max-width: calc(100% - var(--scrollbar-w));
+    max-height: calc(100% - var(--taskbar-h));
+    display: none;          /* 처음엔 숨김 */
+    flex-direction: column;
+    /* 테두리 안쪽 회색 여백 = 제목줄과 내용 사이 간격(--win-gap)과 똑같이 */
+    padding: calc(var(--bv) + var(--win-gap));
+    min-width: 15rem;
+    min-height: 10rem;
+    resize: both;           /* 오른쪽 아래 모서리로 크기 조절 */
+    overflow: hidden;
+}
+
+.window.open { display: flex; }
+
+.title-bar {
+    display: flex;
+    align-items: center;
+    height: 2.4rem;
+    padding: 0 0.25rem 0 0.5rem;
+    background: var(--title-off);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: move;
+}
+
+.window.active .title-bar { background: var(--title); }
+
+.title-bar .title-text {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.title-bar .btn {
+    width: 2.1rem;
+    height: 1.9rem;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* 닫기 × : 크게, _ □ 보다 살짝 떨어져 있음 */
+.title-bar .btn-close {
+    margin-left: 0.25rem;
+    font-size: 1.9rem;
+    padding-bottom: 0.15rem;   /* 글자가 아래로 치우쳐 보여서 살짝 위로 */
+}
+
+/* 최소화 아이콘 : 왼쪽 아래에 붙은 짧은 굵은 막대 */
+.title-bar .btn-min {
+    margin-left: 0.2rem;
+    justify-content: flex-start;
+    align-items: flex-end;
+    padding: 0 0 0.35rem 0.35rem;
+}
+.btn-min i {
+    width: 0.6rem;
+    height: 0.2rem;
+    background: #000;
+}
+
+/* 최대화 아이콘 : 윗변이 굵은 네모 */
+.btn-max i {
+    width: 1rem;
+    height: 0.9rem;
+    border: 0.1rem solid #000;
+    border-top-width: 0.25rem;
+}
+
+.window-body {
+    flex: 1;
+    /* 바깥선이 상자 밖에 그려지므로 그만큼(--bv) 여백을 더 줌 */
+    margin: calc(var(--win-gap) + var(--bv)) var(--bv) var(--bv);
+    padding: 0.8rem;
+    background: #fff;
+    overflow: auto;
+    /* 움푹 들어간 두 겹 테두리
+       안쪽선(검정/연회색) = border → 스크롤바가 생겨도 선이 끝까지 이어짐
+       바깥선(진회색/밝음) = 상자 바깥 그림자 */
+    border: var(--bv) solid;
+    border-color: var(--dark) #dfdfdf #dfdfdf var(--dark);
+    box-shadow: calc(var(--bv) * -1) calc(var(--bv) * -1) 0 var(--shadow),
+                var(--bv) var(--bv) 0 var(--light);
+    user-select: text;
+}
+
+.window-body img,
+.window-body video {
+    max-width: 100%;
+    display: block;
+}
+
+/* 회색 바탕 앱 창 (그림판 · 코인 · Brett · Music) : 위→아래로 쌓이고 창 밖으로 넘치지 않음 */
+.window-body.paint, .window-body.coin, .window-body.brett, .window-body.music {
+    display: flex;
+    flex-direction: column;
+    background: var(--gray);
+    overflow: hidden;
+}
+
+/* 앱 창 안의 움푹 들어간 칸 (그림판 캔버스 · 코인 차트 · Music 액정 · 플레이리스트) */
+.paint-area, .coin-area, .music-screen, #music-list {
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+    box-shadow: inset var(--bv) var(--bv) var(--dark);
+}
+
+/* 사진 한 장이 창 안을 꽉 채우는 창 : <div class="window-body full"> */
+.window-body.full { padding: 0; overflow: hidden; }
+.window-body.full img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* 비율 유지하며 꽉 채움 (넘치는 부분은 잘림) */
+}
+
+/* 창 열기/닫기 모션 '외곽선' : 아이콘 ↔ 창 사이를 오가는 점선 상자 (뒤 색을 뒤집어서 어디서든 보임) */
+.win-outline {
+    position: fixed;
+    z-index: 20001;
+    border: 0.25rem dotted #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+}
+
+/* 최대화 상태 : 보이는 화면 전체 */
+.window.maximized {
+    left: 0 !important;
+    top: 0 !important;
+    width: calc(100% - var(--scrollbar-w)) !important;
+    height: calc(100% - var(--taskbar-h)) !important;
+    resize: none;
+}
+
+/* ================= 화면 전체를 덮는 효과 레이어 =================
+   z-index 가 클수록 위 (창 10~, 시작 메뉴 9998, 작업표시줄 9999)
+   - #club-dark      8 → 불 꺼지면 9999  : Brett 시작하면 어두워지는 막
+   - #disco-light    9 → 불 꺼지면 10000 : Brett 조명
+   - #bg-circle 10000 · #bg-circle-img 10001 · #firefly-canvas 10002 : Meditation
+   - #vapor-filter 15000 · Landwolf 메시지 창 15001~ : Landwolf
+   - #off-screen 20000 : 전원 끈 화면 · .win-outline 20001 : 창 모션 점선 */
+#club-dark, #disco-light, #bg-circle, #firefly-canvas, #vapor-filter {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;      /* 클릭은 그대로 통과 */
+}
+
+/* ----- Brett 시작 : 클럽 불 끄기 + 배경(brett-bk) 깔기 ----- */
+#club-dark {
+    z-index: 8;
+    /* 배경 사진 위에 살짝 어두운 막 → 조명이 더 잘 보임 (0.35 를 키우면 더 어둡게) */
+    background: linear-gradient(rgba(9, 3, 24, 0.35), rgba(9, 3, 24, 0.35)),
+                url("images/brett-bk.png") center / cover,
+                #090318;
+    opacity: 0;
+    /* 닫을 때 서서히 다시 밝아짐 (다 밝아진 뒤에 작업표시줄 아래로 내려감) */
+    transition: opacity 1.2s, z-index 0s 1.2s;
+}
+/* 불 꺼진 동안 (아래→위) : 다른 창·작업표시줄 → 어두운 막 → 조명 → Brett 창
+   막이 작업표시줄과 z-index 가 같아도 html 에서 더 뒤에 있어서 위에 덮임
+   탁! 꺼짐 → 두 번 깜빡 → 배경 사진으로 고정 */
+#club-dark.on {
+    z-index: 9999;
+    opacity: 1;
+    transition: none;
+    animation: lights-off 0.6s steps(1) both;
+}
+@keyframes lights-off {
+    0%   { opacity: 1; }
+    15%  { opacity: 0.2; }
+    30%  { opacity: 1; }
+    45%  { opacity: 0.35; }
+    60%  { opacity: 1; }
+}
+
+/* ----- Brett 조명 (스포트라이트·디스코볼 빛이 바탕화면까지) ----- */
+#disco-light { z-index: 9; }
+body.club #disco-light { z-index: 10000; }
+body.club #win-brett { z-index: 10001 !important; }
+
+/* ----- Meditation 클릭 효과 ----- */
+#meditation-img { cursor: pointer; }
+
+/* 화면 중앙에서 픽셀 블록 원으로 퍼지는 남색 화면 (색·칸 크기·속도는 script.js 에서) */
+#bg-circle { z-index: 10000; cursor: pointer; }
+#bg-circle.on { pointer-events: auto; }
+
+/* 뜨는 사진 : 투명 → 선명하게 나타남
+   - 위치·크기는 script.js 가 img1 과 똑같이 맞춰줌
+   - 나타나는 속도 = transition 의 0.5s */
+#bg-circle-img {
+    position: fixed;
+    z-index: 10001;            /* 남색 화면보다 위 */
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
+    cursor: pointer;
+}
+#bg-circle-img.on {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 반딧불이 : 남색 화면·사진보다 위 */
+#firefly-canvas { z-index: 10002; }
+
+/* 음악 유튜브 플레이어 : 소리만 나고 화면에는 안 보임 (투명 + 클릭 통과)
+   크기를 0 으로 하면 브라우저가 재생을 멈출 수 있어서 크기는 두고 투명하게만 */
+#med-yt-box {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ----- Landwolf : 베이퍼웨이브 보라색 필터 + 담배 메시지 창 -----
+   필터 = 화면 전체(작업표시줄까지)를 보라 → 핑크로 물들임. 밝기는 그대로 두고 색만 바꿔서 그림이 다 보임 */
+#vapor-filter {
+    z-index: 15000;
+    background: linear-gradient(160deg, #6a3df0, #b46cf2 55%, #f08ad8);
+    mix-blend-mode: color;
+    opacity: 0;
+    transition: opacity 0.6s;
+}
+#vapor-filter.on { opacity: 0.8; animation: vapor-hue 5s ease-in-out infinite alternate; }
+@keyframes vapor-hue { from { filter: hue-rotate(-25deg); } to { filter: hue-rotate(30deg); } }   /* 보라 ↔ 핑크로 색이 흘러감 */
+
+/* 취한 효과 (Landwolf 담배 받으면) : 화면이 가로로 물결치며 일렁이고(index.html 의 #drunk-wave) 좌우로 천천히 쏠림
+   일렁임 세기·속도는 index.html 의 scale·dur, 쏠림은 아래 keyframes */
+body.drunk #screen-wrap {
+    filter: url(#drunk-wave);
+    animation: drunk-sway 10s ease-in-out infinite;
+}
+/* 화면을 살짝 키워서(scale) 물결에 밀려난 가장자리 빈틈이 안 보이게, 그래도 보이는 틈은 보라색으로 */
+@keyframes drunk-sway {
+    0%, 100% { transform: scale(1.05) translateX(0); }
+    30%      { transform: scale(1.05) translateX(-0.5rem); }
+    70%      { transform: scale(1.05) translateX(0.5rem); }
+}
+body.drunk { background: #5b3fc9; }
+/* 모션 줄이기를 켠 사람은 흔들림 없이 색만 */
+@media (prefers-reduced-motion: reduce) {
+    body.drunk #screen-wrap { filter: none; animation: none; }
+}
+
+/* 담배 메시지 창 : 사이트 기본 창 + Shut Down 창과 같은 매끈한 내용 칸 (.window-body.shutdown)
+   필터보다 위라서 원래 색 그대로 보임. 크기 조절 없음 */
+.smoke-msg { width: 24rem; height: auto; resize: none; }
+.smoke-msg .title-bar { background: linear-gradient(90deg, #D401FE, #01EEA6); }   /* 보라 → 민트 */
+/* 사진이 정사각형이라 미리 자리를 잡아 둠 → 사진이 늦게 떠도 창이 처음부터 제 크기·제 위치 */
+.smoke-msg img { aspect-ratio: 1 / 1; object-fit: contain; }
+
+/* ================= 커스텀 스크롤바 ================= */
+#scrollbar {
+    width: var(--scrollbar-w);
+    display: flex;
+    flex-direction: column;
+    background: var(--gray);
+    border-left: var(--bv) solid var(--light);
+}
+
+.sb-arrow {
+    height: var(--scrollbar-w);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 삼각형 화살표 */
+.arrow {
+    width: 0;
+    height: 0;
+    border-left: 0.4rem solid transparent;
+    border-right: 0.4rem solid transparent;
+}
+.arrow.up   { border-bottom: 0.4rem solid #000; }
+.arrow.down { border-top: 0.4rem solid #000; }
+
+#sb-track {
+    flex: 1;
+    position: relative;
+    /* 윈도우 특유의 체크무늬 */
+    background: repeating-conic-gradient(var(--gray) 0 25%, #fff 0 50%) 0 0 / 2px 2px;
+}
+
+#sb-thumb {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 0;
+    cursor: default;
+}
+
+/* ================= 작업 표시줄 ================= */
+#taskbar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: var(--taskbar-h);
+    /* 맨 아래 깔리는 평평한 회색 바닥 */
+    background: var(--gray);
+    padding: var(--bv);        /* 바닥과 위 박스 사이 회색 여백 (테두리 한 줄 두께) */
+    z-index: 9999;
+}
+
+/* 바닥 위에 올라간 입체 박스 (테두리는 .bevel 에서 적용) */
+.taskbar-box {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: calc(var(--bv) + 0.08rem);   /* 박스 테두리 안쪽 여백 (작을수록 버튼이 꽉 참) */
+}
+
+#taskbar .btn {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+#taskbar .btn img { height: 1.6rem; }
+
+#tasks {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    gap: 0.3rem;
+    overflow: hidden;
+}
+
+/* Start 버튼 : 내용(아이콘+글자) 길이에 딱 맞게 → 다른 작업 버튼(9rem)보다 짧음 */
+#taskbar #start-btn {
+    padding: 0 0.6rem 0 0.4rem;   /* 왼쪽 0.4rem = 아이콘이 왼쪽에 붙음 */
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+#taskbar #tasks .btn {
+    width: 9rem;
+    padding: 0 0.4rem;   /* 왼쪽 여백 작게 → 아이콘이 왼쪽에 붙음 */
+    gap: 0.4rem;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#clock {
+    height: 100%;
+    width: 9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    /* 클릭 불가 영역이라 얇은 한 줄 들어간 테두리만 */
+    border: 1px solid;
+    border-color: var(--sunken);
+}
+
+/* ================= 시작 메뉴 ================= */
+#start-menu {
+    position: absolute;
+    left: 0.2rem;
+    bottom: 0;
+    display: none;
+    width: 17rem;
+    z-index: 9998;
+}
+
+#start-menu.open { display: flex; }
+
+.start-side {
+    width: 2.4rem;
+    background: linear-gradient(0deg, #DC8D1B, #40DE28);   /* 창 제목줄(--title)과 같은 주황 → 초록 */
+    color: #c3c3c3;
+    font-weight: bold;
+    font-size: 1.5rem;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 0.5rem 0;
+}
+
+.start-side b { color: #fff; }
+
+#start-menu ul {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0.2rem;
+}
+
+#start-menu li {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.5rem 1rem 0.5rem 0.6rem;
+    font-size: 1.15rem;
+    cursor: pointer;
+}
+
+/* 메뉴 왼쪽 아이콘 (사진이 없어도 자리는 유지돼서 글자 줄이 맞음) */
+#start-menu li img {
+    width: 2.6rem;
+    height: 2.6rem;
+    object-fit: contain;
+    color: transparent;   /* 사진 없을 때 깨진 그림 대신 빈칸 */
+}
+
+#start-menu li:hover { background: var(--title); color: #fff; }
+
+#start-menu li.sep {
+    padding: 0;
+    margin: 0.3rem 0;
+    border-top: 1px solid var(--shadow);
+    border-bottom: 1px solid var(--light);
+}
+
+#start-menu li.sep:hover { background: none; }
+
+/* ================= 그림판 (BKpaint) ================= */
+.window-body.paint {
+    position: relative;     /* 색 선택 패널 위치 기준 */
+    gap: var(--win-gap);
+    padding: var(--win-gap);
+}
+
+.paint-tools {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.paint-tools .btn,
+.paint-tools select {
+    height: 2.2rem;
+    font-size: 1rem;
+}
+
+/* 도구 버튼 (아이콘 사진) */
+.paint-tools .btn {
+    display: flex;
+    align-items: center;
+}
+
+.paint-tools .btn img { height: 1.5rem; }
+
+.paint-tools select {
+    border: 1px solid;
+    border-color: var(--sunken);
+    background: #fff;
+}
+
+/* 그림판 : 바탕화면 배경 사진 위에 투명 캔버스를 올려 그림 (배경 사진은 script.js 가 #desktop 것을 그대로 가져옴)
+   칸 비율 = 바탕화면 비율 (script.js 가 맞춤) → 저장했을 때 그림이 배경과 같은 자리에 딱 맞음 */
+#win-paint { height: auto; resize: horizontal; }
+.paint-area { flex: none; background: #fff center top / cover; }
+
+#paint-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.paint-palette {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* 지금 고른 색 (누르면 색 선택 패널) */
+#paint-current {
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    background: #000;
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+    cursor: pointer;
+}
+
+.swatches {
+    display: grid;
+    grid-template-columns: repeat(6, 1.3rem);
+    gap: 0.15rem;
+}
+
+.swatches i {
+    height: 1.3rem;
+    border: 1px solid;
+    border-color: var(--sunken);
+    cursor: pointer;
+}
+
+/* 색 선택 패널 : 팔레트 위로 뜨는 큰 창 (크기는 --cp-size 만 바꾸면 됨) */
+#color-panel {
+    --cp-size: 22rem;
+    width: calc(var(--cp-size) + 1.2rem);
+    position: absolute;
+    left: var(--win-gap);
+    bottom: 3.4rem;
+    padding: 0.6rem;
+    z-index: 10;
+}
+
+.color-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.color-head .btn {
+    width: 1.8rem;
+    height: 1.6rem;
+    padding: 0;
+    font-weight: bold;
+}
+
+/* 채도·밝기 사각형 (흰색→색, 위→아래 검정) */
+.cp-sv {
+    position: relative;
+    height: calc(var(--cp-size) * 0.65);
+    cursor: crosshair;
+    touch-action: none;
+}
+.cp-sv::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+}
+
+/* 색상 막대 (무지개) */
+.cp-hue {
+    position: relative;
+    height: 1.6rem;
+    margin-top: 0.6rem;
+    background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+    cursor: pointer;
+    touch-action: none;
+}
+
+.cp-sv, .cp-hue {
+    border: 1px solid;
+    border-color: var(--sunken);
+}
+
+/* 동그라미·세로선 표시 */
+.cp-sv-dot, .cp-hue-dot {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+.cp-sv-dot {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #000;
+}
+.cp-hue-dot {
+    top: 50%;
+    width: 0.4rem;
+    height: 2rem;
+    background: #fff;
+    border: 1px solid #000;
+}
+
+.cp-foot {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.6rem;
+}
+
+.cp-preview {
+    width: 2.4rem;
+    height: 2.4rem;
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+}
+
+.cp-hex {
+    flex: 1;
+    min-width: 0;
+    height: 2.2rem;
+    font-size: 1.1rem;
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+}
+
+.cp-ok { height: 2.2rem; font-size: 1rem; }
+
+/* ================= Pepe Coin 차트 ================= */
+/* 창이 열려 있을 때 바탕화면 전체를 덮는 gif : 올랐으면 pepecoin1 / 내렸으면 pepecoin2
+   순서(아래→위) : 바탕화면 · 아이콘 → gif → 창 → 스크롤바 · 작업표시줄 */
+#desktop.coin-up::after, #desktop.coin-down::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 9;               /* 아이콘(드래그 중 5)보다 위, 창(10 이상)보다 아래 */
+    background: url("images/pepecoin1.gif");   /* 기본으로 바둑판처럼 반복됨 */
+    background-size: 7rem;                      /* gif 한 칸 크기 */
+}
+#desktop.coin-down::after { background-image: url("images/pepecoin2.gif"); }
+
+/* 배경 전환 버튼은 기간 버튼들과 떨어져 오른쪽 끝에 */
+#coin-bg { margin-left: auto; }
+
+.window-body.coin {
+    gap: var(--win-gap);
+    padding: var(--win-gap);
+}
+
+.coin-head {
+    display: flex;
+    gap: 1.5rem;
+    align-items: baseline;
+    font-size: 1.4rem;
+}
+
+.coin-tools { display: flex; gap: 0.3rem; }
+.coin-area { flex: 1; min-height: 0; background: #000; }   /* 차트 칸 : 남는 높이를 다 차지 */
+.coin-tools .btn { height: 2.2rem; }
+
+#coin-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ================= Brett 리듬 게임 ================= */
+/* 창 주변에 보라빛 네온 (기본 입체 테두리 그림자 + 바깥 빛) */
+#win-brett {
+    width: 36rem;
+    height: auto;
+    box-shadow: inset calc(var(--bv) * -1) calc(var(--bv) * -1) var(--shadow),
+                inset var(--bv) var(--bv) #dfdfdf,
+                0 0 2.5rem rgba(201, 64, 200, 0.45);
+}
+
+/* 제목줄 : 보라 → 핑크 → 하늘색 그라데이션 (활성/비활성 같음) */
+#win-brett .title-bar { background: linear-gradient(90deg, #7a1fa2, #c940c8 45%, #4cc9f0); }
+
+.window-body.brett {
+    gap: 0.6rem;
+    padding: 0 0 var(--win-gap);   /* 위·양옆 여백 없이 게임 화면이 테두리에 딱 붙음 */
+    font-size: 1.1rem;
+}
+
+#brett-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.brett-row {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr 3rem;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0 var(--win-gap);
+}
+.brett-row output { text-align: right; font-weight: bold; }
+
+/* 윈도우 98 스타일 슬라이더 (창 안의 모든 슬라이더 : Brett · Music)
+   Chrome 용(-webkit-)과 Firefox 용(-moz-)은 한 규칙으로 합치면 서로 상대 브라우저에서 통째로 무시돼서 따로 씀 */
+.window-body input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 1.4rem;
+    background: transparent;
+    cursor: pointer;
+}
+.window-body input[type=range]::-webkit-slider-runnable-track {
+    height: 0.35rem;
+    background: var(--shadow);
+    box-shadow: inset 1px 1px var(--dark), inset -1px -1px var(--light);
+}
+.window-body input[type=range]::-moz-range-track {
+    height: 0.35rem;
+    background: var(--shadow);
+    box-shadow: inset 1px 1px var(--dark), inset -1px -1px var(--light);
+}
+.window-body input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 0.9rem;
+    height: 1.4rem;
+    margin-top: -0.53rem;
+    background: var(--gray);
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light), inset -2px -2px var(--shadow);
+}
+.window-body input[type=range]::-moz-range-thumb {
+    width: 0.9rem;
+    height: 1.4rem;
+    border: 0;
+    border-radius: 0;
+    background: var(--gray);
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light), inset -2px -2px var(--shadow);
+}
+
+/* ================= Music 플레이어 ================= */
+#win-music { width: 34rem; height: auto; }
+
+.window-body.music {
+    gap: 0.5rem;
+    padding: var(--win-gap) 0.6rem 0.6rem;
+    font-size: 1.1rem;
+}
+
+/* 검정 액정 화면 (초록 글씨) */
+.music-screen {
+    background: #000;
+    color: #40DE28;
+    padding: 0.5rem 0.7rem;
+}
+.music-info {
+    display: grid;
+    grid-template-columns: 1.2rem auto 1fr;
+    gap: 0.7rem;
+    align-items: center;
+}
+#music-time { font-size: 2.2rem; letter-spacing: 0.1rem; }
+/* 제목 : 칸보다 길면 오른쪽 → 왼쪽으로 흘러감 */
+.music-title { overflow: hidden; white-space: nowrap; font-size: 1.3rem; }
+.music-title span { display: inline-block; }
+.music-title.scroll span { padding-left: 100%; animation: music-marquee 9s linear infinite; }
+@keyframes music-marquee { to { transform: translateX(-100%); } }
+
+#music-viz { display: block; width: 100%; height: 3.5rem; margin-top: 0.4rem; }
+
+/* 재생 버튼 줄 */
+.music-ctrl { display: flex; gap: 0.3rem; align-items: center; }
+.music-ctrl .btn { width: 3rem; height: 2.4rem; font-size: 1rem; font-weight: bold; padding: 0; }
+.music-vol { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; width: 10rem; }
+
+/* 플레이리스트 : 움푹 들어간 흰 목록 */
+#music-list {
+    margin: 0;
+    padding: 0.2rem 0 0.2rem 2.4rem;
+    height: 8rem;
+    overflow-y: auto;
+    background: #fff;
+}
+#music-list li { padding: 0.2rem 0.4rem; cursor: pointer; }
+#music-list li.selected { background: var(--title); color: #fff; }
+#music-list li.playing { font-weight: bold; }
+#music-list li.playing::after { content: "  ♪"; }
+#music-list li.missing { color: var(--shadow); }   /* 파일이 없는 곡 */
+
+/* ================= 전원 끄기 ================= */
+#win-shutdownpepe { width: 32rem; height: auto; resize: none; }
+
+/* 알림창 내용 칸 (Shut Down · Landwolf 메시지 같이 사용)
+   움푹 파인 테두리 없이 회색 창 바탕에 바로 내용이 올라감 (윈도우 알림창처럼) */
+.window-body.shutdown {
+    background: var(--gray);
+    text-align: center;
+    border: 0;
+    box-shadow: none;
+    margin: var(--win-gap) 0 0;
+    padding: 0 0 0.8rem;       /* 양옆 여백 없음 → 사진이 제목줄 양 끝과 줄이 딱 맞음 */
+}
+.window-body.shutdown img { width: 100%; }
+
+.shutdown-btns {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.shutdown-btns .btn { width: 7rem; height: 2.4rem; font-size: 1.15rem; }
+
+/* 꺼진 화면 : 윈도우 95 종료 화면처럼 검정 바탕에 주황 글씨 */
+#off-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    cursor: pointer;
+}
+#off-screen[hidden] { display: none; }
+#off-screen p {
+    color: #ff8c00;
+    font-family: var(--font);
+    font-size: 3rem;
+    text-align: center;
+}
+
+/* ================= 휴지통 ================= */
+.recycle-tools {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+}
+
+.recycle-tools .btn { height: 2.2rem; }
+
+#bin-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* 버린 아이콘 (바탕화면 아이콘과 같은 모양, 글자만 검정) */
+.bin-item {
+    width: 8rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.bin-item img {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 0.4rem;
+}
+
+.bin-item span {
+    padding: 0 0.3rem;
+    font-size: 1.15rem;
+    white-space: nowrap;
+}
+
+.bin-item.selected span { background: var(--title); color: #fff; outline: 1px dotted #000; }
+
+/* ============ 창 안쪽 스크롤바도 클래식 스타일로 ============ */
+.window-body::-webkit-scrollbar { width: 1.6rem; height: 1.6rem; }
+.window-body::-webkit-scrollbar-track { background: #dfdfdf; }
+.window-body::-webkit-scrollbar-thumb {
+    background: var(--gray);
+    border: var(--bv) solid;
+    border-color: var(--light) var(--dark) var(--dark) var(--light);
+    box-shadow: inset calc(var(--bv) * -1) calc(var(--bv) * -1) var(--shadow),
+                inset var(--bv) var(--bv) #dfdfdf;
+}

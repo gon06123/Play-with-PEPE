@@ -1205,7 +1205,9 @@ if (brettCanvas) {
     // 노래 : 박자는 노래가 지금 몇 초째인지로 계산 → 개구리·판정·조명이 노래와 딱 맞음
     // 다른 노래로 바꾸려면 src·bpm·offset(첫 "쿵"이 나오는 초) 만 바꾸면 됨
     const SONG = { src: 'sounds/teknoaxe-funky-love-disco-pump.mp3', bpm: 115, offset: 0.025 };
-    const song = new Audio(SONG.src);
+    const song = new Audio();
+    song.preload = 'none';                 // 처음엔 안 받음 (10MB 라 미리 받으면 배경·아이콘이 늦게 뜸) → 시작할 때 받음
+    song.src = SONG.src;
     song.loop = true;
     song.volume = 0.8;
     song.muted = muted;

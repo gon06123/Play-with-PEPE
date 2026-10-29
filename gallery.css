@@ -1,0 +1,151 @@
+/* =========================================================
+   Gallery (gallery.js) : style.css 다음 줄에서 불러오기
+   사이트의 색 변수(--gray, --bv …)를 그대로 써요
+   ========================================================= */
+
+/* 창 안 : 위에서부터 주소창 · 사진 칸 · 상태줄 */
+.window-body.gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--win-gap);
+    padding: 0.2rem;
+    background: var(--gray);
+    overflow: hidden;
+    user-select: none;
+}
+.gallery-src { display: none; }   /* 사진 목록 원본 (gallery.js 가 읽고 숨김) */
+
+/* 움푹 들어간 칸 (주소 · 사진 칸 · 상태줄 칸) */
+.gal-path, .gal-frame, .gal-status > * {
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+    box-shadow: inset var(--bv) var(--bv) var(--dark);
+}
+
+/* ---------- 주소창 ---------- */
+.gal-address {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1.1rem;
+}
+.gal-path {
+    flex: 1;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.4rem;
+    background: #fff;
+}
+.window-body .gal-path img { width: 1.4rem; height: 1.4rem; }
+
+/* ---------- 사진 칸 (썸네일 격자) ---------- */
+.gal-frame {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #fff;
+}
+.gal-grid {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    padding: 0.8rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    align-content: start;
+    gap: 0.8rem 0.4rem;
+}
+
+/* 썸네일 하나 : 사진 + 파일 이름 (선택하면 이름에 주황→초록 바탕) */
+.gal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem;
+    background: none;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+}
+.gal-thumb {
+    width: 7rem;
+    height: 7rem;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    border: 0.1rem solid var(--shadow);
+}
+.window-body .gal-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.gal-name {
+    max-width: 100%;
+    padding: 0 0.2rem;
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.gal-item.selected .gal-thumb { border-color: #DC8D1B; outline: 0.1rem dotted #000; }
+.gal-item.selected .gal-name { background: var(--title); color: #fff; }
+.gal-item:focus { outline: none; }
+
+/* ---------- 크게 보기 : 사진 칸 위에 덮임 ---------- */
+.gal-view {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+}
+.gal-view[hidden] { display: none; }
+/* 사진 칸 : 남는 자리를 다 쓰고, 사진은 비율 그대로 칸 안에 통째로 들어감
+   (창 크기를 바꾸면 사진도 같이 커지고 작아짐 · 남는 곳은 검은 여백) */
+.gal-view-pic {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+.window-body .gal-view-pic img {
+    position: absolute;
+    inset: 0.6rem;
+    width: calc(100% - 1.2rem);
+    height: calc(100% - 1.2rem);
+    max-width: none;
+    object-fit: contain;
+}
+.gal-view-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem;
+    background: var(--gray);
+}
+.gal-view-bar .btn { height: 2.2rem; font-size: 1.1rem; }
+.gal-view-name {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
+    white-space: pre;
+    overflow: hidden;
+}
+
+/* ---------- 상태줄 ---------- */
+.gal-status {
+    display: flex;
+    gap: 0.3rem;
+    height: 2rem;
+    font-size: 1rem;
+}
+.gal-status > * {
+    display: flex;
+    align-items: center;
+    padding: 0 0.6rem;
+}
+.gal-status-text { flex: 1; }

@@ -297,7 +297,6 @@ const bin = document.getElementById('recycle-bin');
 const binImg = bin.querySelector('img');
 const binEmptySrc = binImg.getAttribute('src');
 const binList = document.getElementById('bin-list');
-const binEmptyMsg = document.getElementById('bin-empty-msg');
 const trashed = [];   // 버린 아이콘 목록
 
 // 마우스가 휴지통 위에 있는지
@@ -328,30 +327,68 @@ function restoreIcon(icon) {
     updateBin();
 }
 
-// 휴지통 창 목록 + 휴지통 아이콘 사진 갱신
+// 휴지통에 처음부터 살고 있는 페페 : 복원도 안 되고 비워도 안 지워짐 (건드리면 한마디씩)
+// 그림·이름·대사는 여기서 바꾸기
+const BIN_PEPE_IMG = 'images/pinball-pepe-cry.png';
+const BIN_PEPE_HURT = 'images/pinball-pepe-hurt.png';   // 대꾸할 때 잠깐 바뀌는 그림
+const BIN_PEPE_NAME = 'sad_pepe.png';
+const BIN_PEPE_LINES = {
+    restore: ['싫어. 여기 살 거야', '밖은 무서워…', '날 버린 건 너잖아', '여기 의외로 따뜻해'],
+    clear: ['안 나가.', '여기 내 집이야', '삭제 실패 ㅋ', '나 빼고 다 버려'],
+};
+
+const binPepe = document.createElement('div');
+binPepe.className = 'bin-item bin-pepe';
+binPepe.innerHTML = `<img src="${BIN_PEPE_IMG}" alt=""><span>${BIN_PEPE_NAME}</span>`;
+const binPepeImg = binPepe.querySelector('img');
+const binPepeName = binPepe.querySelector('span');
+let binPepeTimer = null;
+
+// 페페가 한마디 + 부르르 떨기 (잠시 뒤 원래대로)
+function binPepeSay(kind) {
+    const lines = BIN_PEPE_LINES[kind];
+    binPepeName.textContent = lines[Math.floor(Math.random() * lines.length)];
+    binPepeImg.src = BIN_PEPE_HURT;
+    binPepe.classList.remove('nope');
+    void binPepe.offsetWidth;
+    binPepe.classList.add('nope');
+    clearTimeout(binPepeTimer);
+    binPepeTimer = setTimeout(() => {
+        binPepeName.textContent = BIN_PEPE_NAME;
+        binPepeImg.src = BIN_PEPE_IMG;
+        binPepe.classList.remove('nope');
+    }, 1800);
+}
+
+function selectBinItem(item) {
+    binList.querySelectorAll('.bin-item').forEach(i => i.classList.remove('selected'));
+    item.classList.add('selected');
+}
+binPepe.onclick = () => selectBinItem(binPepe);
+binPepe.ondblclick = () => binPepeSay('restore');
+
+// 휴지통 창 목록 + 휴지통 아이콘 사진 갱신 (페페가 늘 있으니 휴지통은 항상 차 있음)
 function updateBin() {
     binList.innerHTML = '';
+    binList.appendChild(binPepe);
     trashed.forEach(icon => {
         const item = document.createElement('div');
         item.className = 'bin-item';
         item.append(icon.querySelector('img').cloneNode(), icon.querySelector('span').cloneNode(true));
-        item.onclick = () => {
-            binList.querySelectorAll('.bin-item').forEach(i => i.classList.remove('selected'));
-            item.classList.add('selected');
-        };
+        item.onclick = () => selectBinItem(item);
         item.ondblclick = () => restoreIcon(icon);
         item.icon = icon;
         binList.appendChild(item);
     });
-    binEmptyMsg.hidden = trashed.length > 0;
-    binImg.src = trashed.length && bin.dataset.full ? bin.dataset.full : binEmptySrc;
+    binImg.src = bin.dataset.full || binEmptySrc;
 }
 // 꽉 찬 휴지통 사진이 없으면 빈 휴지통 사진 그대로
 binImg.onerror = () => { if (binImg.getAttribute('src') !== binEmptySrc) binImg.src = binEmptySrc; };
 
 document.getElementById('bin-restore').onclick = () => {
     const sel = binList.querySelector('.bin-item.selected');
-    if (sel) restoreIcon(sel.icon);
+    if (sel === binPepe) binPepeSay('restore');
+    else if (sel) restoreIcon(sel.icon);
 };
 
 document.getElementById('bin-clear').onclick = () => {
@@ -361,7 +398,9 @@ document.getElementById('bin-clear').onclick = () => {
     });
     trashed.length = 0;
     updateBin();
+    binPepeSay('clear');
 };
+updateBin();
 
 // ---------- 아이콘: 클릭 = 선택, 더블클릭 = 열기 ----------
 icons.forEach(icon => {
@@ -490,6 +529,31 @@ startMenu.querySelectorAll('li[data-window]').forEach(li => {
         openWindow(li.dataset.window);
         closeStartMenu();
     });
+});
+
+// ---------- 빠른 실행 (시작 버튼 옆 작은 아이콘) ----------
+document.querySelectorAll('#quick-launch [data-window]').forEach(b => {
+    b.addEventListener('click', () => openWindow(b.dataset.window));
+});
+
+// 바탕화면 보기 : 열린 창 전부 작업표시줄로 내리기 · 다시 누르면 내렸던 창들 다시 올리기
+// (작업표시줄 버튼이 있는 창만 · 최소화 버튼 없는 창과 Landwolf 메시지 창은 그대로 둠)
+let desktopShown = [];
+document.getElementById('show-desktop').addEventListener('click', () => {
+    const open = [...document.querySelectorAll('.window.open')]
+        .filter(w => w.taskBtn && !('closeOnly' in w.dataset || 'noButtons' in w.dataset));
+    if (open.length) {
+        // 활성 창을 맨 뒤에 둬서 다시 올릴 때 맨 앞에 오게
+        desktopShown = open.sort((a, b) => a.classList.contains('active') - b.classList.contains('active'));
+        open.forEach(minimizeWindow);
+    } else {
+        desktopShown.filter(w => w.taskBtn && !w.classList.contains('open')).forEach(w => {
+            w.classList.add('open');
+            animateWindow(w, true, w.taskBtn.getBoundingClientRect());
+            focusWindow(w);
+        });
+        desktopShown = [];
+    }
 });
 
 // ---------- 전원 끄기 ----------
@@ -745,7 +809,7 @@ if (coinCanvas) {
     loadCoin();
 }
 
-// ---------- 그림판 (BKpaint) ----------
+// ---------- 그림판 (BGpaint) ----------
 const canvas = document.getElementById('paint-canvas');
 if (canvas) {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });

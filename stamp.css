@@ -1,0 +1,97 @@
+/* =========================================================
+   Stamp (stamp.js) : style.css 다음 줄에서 불러오기
+   ========================================================= */
+
+/* 붙인 스티커가 들어가는 층 : 바탕화면 그림 위, 아이콘 아래 · 클릭은 통과 */
+#stamp-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* 붙인 스티커 : 마우스 끝이 스티커 한가운데 · 붙을 때 쿵 하고 눌림 */
+.stamp {
+    position: absolute;
+    transform: translate(-50%, -50%) rotate(var(--tilt, 0deg));
+    filter: drop-shadow(0.15rem 0.2rem 0 rgba(0, 0, 0, .35));
+    animation: stamp-in .22s steps(4);
+}
+@keyframes stamp-in {
+    0%   { transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)) scale(1.5); opacity: .4; }
+    60%  { transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)) scale(.9);  opacity: 1; }
+    100% { transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)) scale(1); }
+}
+
+/* 굴러가는 스티커 : 쿵 모션 없이 바로 굴러감 (위치·회전은 stamp.js 가 매 프레임) */
+.stamp.rolling { animation: none; }
+
+/* ---------- 콜라 쏟기 ---------- */
+/* 콜라 픽셀 (stamp.js 가 한 칸씩 그림) : 바닥에 쌓인 것 / 떨어지는 중인 것 · 맨 아래 깔림 */
+.soda-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+/* 거품 : 쌓인 콜라 위에서 흰 테두리 네모 픽셀이 올라오며 커졌다 톡 터짐 */
+.soda-bubble {
+    position: absolute;
+    width: var(--s);
+    height: var(--s);
+    border: 0.15rem solid rgba(255, 255, 255, .85);
+    transform: translate(-50%, -50%) scale(0);
+    animation: soda-fizz .7s steps(4) both;
+}
+@keyframes soda-fizz {
+    0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    70%  { transform: translate(-50%, -80%) scale(1); opacity: 1; }
+    85%  { transform: translate(-50%, -90%) scale(1.4); opacity: .6; }
+    100% { transform: translate(-50%, -90%) scale(1.6); opacity: 0; }
+}
+
+/* 마우스를 따라다니는 스티커 커서 (스탬프 모드일 때만) */
+#stamp-cursor {
+    position: fixed;
+    z-index: 25000;
+    transform: translate(-50%, -50%);
+    opacity: .75;
+    pointer-events: none;
+    display: none;
+}
+body.stamping #stamp-cursor { display: block; }
+body.stamping #stamp-cursor.away { display: none; }
+/* 휠로 바꿀 때 톡 튀어나옴 */
+#stamp-cursor.swap { animation: stamp-swap .16s steps(3); }
+@keyframes stamp-swap {
+    0%   { transform: translate(-50%, -50%) scale(.6); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+/* 콜라 캔 : 쏟을 때 꼴깍 기울었다 돌아옴 */
+#stamp-cursor.tip { animation: stamp-tip .5s steps(5); }
+@keyframes stamp-tip {
+    0%   { transform: translate(-50%, -50%) rotate(0); }
+    40%  { transform: translate(-30%, -60%) rotate(110deg); }
+    70%  { transform: translate(-30%, -60%) rotate(110deg); }
+    100% { transform: translate(-50%, -50%) rotate(0); }
+}
+/* 스탬프 모드 : 바탕화면 위에선 원래 커서 숨김 (창·작업표시줄 위에선 그대로) */
+body.stamping #desktop,
+body.stamping #desktop .icon { cursor: none; }
+body.stamping #desktop .window,
+body.stamping #sound-btn { cursor: auto; }   /* 창 안 버튼 등은 원래 커서 그대로 */
+
+/* 안내 글 : 작업표시줄 바로 위 가운데 */
+#stamp-hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--taskbar-h) + 0.6rem);
+    z-index: 25000;
+    transform: translateX(-50%);
+    padding: 0.3rem 0.9rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    pointer-events: none;
+    display: none;
+}
+body.stamping #stamp-hint { display: block; }

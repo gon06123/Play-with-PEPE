@@ -16,8 +16,8 @@ html { font-size: 1vw; }
     --title-off: #808080;   /* 비활성 창 제목줄 */
     --sunken: var(--shadow) var(--light) var(--light) var(--shadow);   /* 움푹 들어간 칸 테두리 색 (border-color 용) */
 
-    --bv: 0.15rem;          /* 입체 테두리 한 겹 두께 (키우면 전체 테두리가 더 두꺼워짐) */
-    --win-gap: 0.3rem;     /* 창 안쪽 회색 여백 (바깥 테두리·제목줄·내용 사이 간격 통일) */
+    --bv: 0.12rem;          /* 입체 테두리 한 겹 두께 (키우면 전체 테두리가 더 두꺼워짐) */
+    --win-gap: 0.2rem;     /* 창 안쪽 회색 여백 (바깥 테두리·제목줄·내용 사이 간격 통일) */
     --taskbar-h: 3.1rem; /* 작업표시줄 높이 */
     --scrollbar-w: 1.7rem; /* 스크롤바 너비 */
     --desktop-h: 53rem;     /* 바탕화면 전체 높이 (늘리면 스크롤 생김) */
@@ -81,8 +81,8 @@ body {
 .boot-blink { animation: boot-blink 1s steps(1) infinite; }
 @keyframes boot-blink { 50% { opacity: 0; } }
 
-/* 2) 로그인 : 윈도우 98 청록 바탕 + 가운데 로그인 창 (테두리·버튼은 사이트 공통 .bevel / .btn) */
-.boot-login { position: absolute; inset: 0; background: #008080; cursor: default; animation: boot-fade 0.6s; }
+/* 2) 로그인 : 창 제목줄(--title)과 같은 주황 → 초록 바탕 + 가운데 로그인 창 (테두리·버튼은 사이트 공통 .bevel / .btn) */
+.boot-login { position: absolute; inset: 0; background: var(--title); cursor: default; animation: boot-fade 0.6s; }
 @keyframes boot-fade { from { opacity: 0; } }
 .boot-dlg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40rem; padding: calc(var(--bv) + var(--win-gap)); }
 .boot-dlg-bar { height: 2.4rem; display: flex; align-items: center; padding: 0 0.6rem; color: #fff; font-size: 1.3rem; font-weight: 700; background: var(--title); }
@@ -121,6 +121,37 @@ body {
     background-size: cover;
     background-position: center top;
     overflow: hidden;
+}
+
+/* ================= 바탕화면 타이틀 ================= */
+/* 위쪽 가운데 "Play with PEPE" · 클릭은 통과 (아이콘·스탬프 방해 안 함) */
+#desk-title {
+    position: absolute;
+    left: 50%;
+    top: 0.5rem;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-family: "DotGothic16", sans-serif;
+    font-size: 7rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #fff;
+    white-space: nowrap;
+    /* 뚝뚝 끊긴 픽셀 그림자 (오른쪽 아래로 두 겹) */
+    text-shadow: 0.3rem 0.3rem 0 var(--dark), 0.6rem 0.6rem 0 rgba(0, 0, 0, .25);
+    pointer-events: none;
+    user-select: none;
+}
+/* PEPE 글자 : 창 제목줄과 같은 주황 → 초록 */
+#desk-title .pepe-word {
+    background: var(--title);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0.3rem 0.3rem 0 var(--dark));
+    text-shadow: none;
 }
 
 /* ================= 소리 버튼 ================= */
@@ -224,11 +255,11 @@ body {
 .title-bar {
     display: flex;
     align-items: center;
-    height: 2.4rem;
-    padding: 0 0.25rem 0 0.5rem;
+    height: 2.1rem;
+    padding: 0 0.2rem 0 0.45rem;
     background: var(--title-off);
     color: #fff;
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: bold;
     cursor: move;
 }
@@ -243,44 +274,44 @@ body {
 }
 
 .title-bar .btn {
-    width: 2.1rem;
-    height: 1.9rem;
+    width: 1.85rem;
+    height: 1.65rem;
     padding: 0;
     margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: bold;
     line-height: 1;
 }
 
 /* 닫기 × : 크게, _ □ 보다 살짝 떨어져 있음 */
 .title-bar .btn-close {
-    margin-left: 0.25rem;
-    font-size: 1.9rem;
-    padding-bottom: 0.15rem;   /* 글자가 아래로 치우쳐 보여서 살짝 위로 */
+    margin-left: 0.22rem;
+    font-size: 1.65rem;
+    padding-bottom: 0.12rem;   /* 글자가 아래로 치우쳐 보여서 살짝 위로 */
 }
 
 /* 최소화 아이콘 : 왼쪽 아래에 붙은 짧은 굵은 막대 */
 .title-bar .btn-min {
-    margin-left: 0.2rem;
+    margin-left: 0.18rem;
     justify-content: flex-start;
     align-items: flex-end;
-    padding: 0 0 0.35rem 0.35rem;
+    padding: 0 0 0.32rem 0.32rem;
 }
 .btn-min i {
-    width: 0.6rem;
-    height: 0.2rem;
+    width: 0.52rem;
+    height: 0.18rem;
     background: #000;
 }
 
 /* 최대화 아이콘 : 윗변이 굵은 네모 */
 .btn-max i {
-    width: 1rem;
-    height: 0.9rem;
-    border: 0.1rem solid #000;
-    border-top-width: 0.25rem;
+    width: 0.88rem;
+    height: 0.78rem;
+    border: 0.09rem solid #000;
+    border-top-width: 0.22rem;
 }
 
 .window-body {
@@ -561,6 +592,32 @@ body.drunk { background: #5b3fc9; }
     flex-shrink: 0;
 }
 
+/* 빠른 실행 : 양옆에 세로 손잡이 줄 + 평평한 작은 아이콘 버튼 (마우스 올리면 볼록, 누르면 오목) */
+#quick-launch {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0 0.5rem;
+    flex-shrink: 0;
+    border-left: 0.1rem solid var(--shadow);
+    border-right: 0.1rem solid var(--shadow);
+    box-shadow: inset 0.1rem 0 var(--light), 0.1rem 0 var(--light);
+}
+#quick-launch button {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    background: none;
+    border: var(--bv) solid transparent;
+    cursor: pointer;
+}
+#quick-launch button:hover { border-color: var(--light) var(--dark) var(--dark) var(--light); }
+#quick-launch button:active { border-color: var(--dark) var(--light) var(--light) var(--dark); }
+#quick-launch img { width: 1.7rem; height: 1.7rem; object-fit: contain; pointer-events: none; }
+
 #taskbar #tasks .btn {
     width: 9rem;
     padding: 0 0.4rem;   /* 왼쪽 여백 작게 → 아이콘이 왼쪽에 붙음 */
@@ -641,7 +698,7 @@ body.drunk { background: #5b3fc9; }
 
 #start-menu li.sep:hover { background: none; }
 
-/* ================= 그림판 (BKpaint) ================= */
+/* ================= 그림판 (BGpaint) ================= */
 .window-body.paint {
     position: relative;     /* 색 선택 패널 위치 기준 */
     gap: var(--win-gap);
@@ -1060,6 +1117,14 @@ body.drunk { background: #5b3fc9; }
 
 .bin-item.selected span { background: var(--title); color: #fff; outline: 1px dotted #000; }
 
+/* 휴지통에 사는 페페 : 대꾸할 땐 대사가 줄바꿈되고 부르르 떪 */
+.bin-pepe.nope span { white-space: normal; }
+.bin-pepe.nope img { animation: bin-pepe-nope .35s steps(2) 3; }
+@keyframes bin-pepe-nope {
+    0%   { transform: translateX(-0.3rem) rotate(-6deg); }
+    100% { transform: translateX(0.3rem) rotate(6deg); }
+}
+
 /* ============ 창 안쪽 스크롤바도 클래식 스타일로 ============ */
 .window-body::-webkit-scrollbar { width: 1.6rem; height: 1.6rem; }
 .window-body::-webkit-scrollbar-track { background: #dfdfdf; }
@@ -1069,4 +1134,47 @@ body.drunk { background: #5b3fc9; }
     border-color: var(--light) var(--dark) var(--dark) var(--light);
     box-shadow: inset calc(var(--bv) * -1) calc(var(--bv) * -1) var(--shadow),
                 inset var(--bv) var(--bv) #dfdfdf;
+}
+
+/* 바탕화면 스크롤바(#scrollbar)와 똑같이 : 체크무늬 길 + 위·아래 화살표 버튼
+   쓰는 곳 : What is PEPE 창 · Gallery 사진 칸 (다른 칸에도 쓰려면 선택자만 추가) */
+#win-whatispepe .window-body::-webkit-scrollbar,
+.gal-grid::-webkit-scrollbar { width: var(--scrollbar-w); height: var(--scrollbar-w); }
+#win-whatispepe .window-body::-webkit-scrollbar-track,
+.gal-grid::-webkit-scrollbar-track {
+    background: repeating-conic-gradient(var(--gray) 0 25%, #fff 0 50%) 0 0 / 2px 2px;
+}
+#win-whatispepe .window-body::-webkit-scrollbar-thumb,
+.gal-grid::-webkit-scrollbar-thumb,
+#win-whatispepe .window-body::-webkit-scrollbar-button,
+.gal-grid::-webkit-scrollbar-button {
+    background-color: var(--gray);
+    border: var(--bv) solid;
+    border-color: var(--light) var(--dark) var(--dark) var(--light);
+    box-shadow: inset calc(var(--bv) * -1) calc(var(--bv) * -1) var(--shadow),
+                inset var(--bv) var(--bv) #dfdfdf;
+}
+/* 화살표 버튼 : 위(▲) 하나 · 아래(▼) 하나만 */
+#win-whatispepe .window-body::-webkit-scrollbar-button:vertical:start:increment,
+#win-whatispepe .window-body::-webkit-scrollbar-button:vertical:end:decrement,
+.gal-grid::-webkit-scrollbar-button:vertical:start:increment,
+.gal-grid::-webkit-scrollbar-button:vertical:end:decrement { display: none; }
+#win-whatispepe .window-body::-webkit-scrollbar-button:vertical:start:decrement,
+.gal-grid::-webkit-scrollbar-button:vertical:start:decrement {
+    display: block;
+    height: var(--scrollbar-w);
+    background: var(--gray) no-repeat center / 0.8rem 0.4rem
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1'%3E%3Cpath d='M0 1L1 0L2 1z'/%3E%3C/svg%3E");
+}
+#win-whatispepe .window-body::-webkit-scrollbar-button:vertical:end:increment,
+.gal-grid::-webkit-scrollbar-button:vertical:end:increment {
+    display: block;
+    height: var(--scrollbar-w);
+    background: var(--gray) no-repeat center / 0.8rem 0.4rem
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1'%3E%3Cpath d='M0 0L2 0L1 1z'/%3E%3C/svg%3E");
+}
+#win-whatispepe .window-body::-webkit-scrollbar-button:active,
+.gal-grid::-webkit-scrollbar-button:active {
+    border-color: var(--dark) var(--light) var(--light) var(--dark);
+    box-shadow: inset var(--bv) var(--bv) var(--shadow);
 }

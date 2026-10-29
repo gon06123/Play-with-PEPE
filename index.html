@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play with Pepe</title>
-    <!-- 글꼴 : Pixelify Sans = 사이트 전체 / DotGothic16 = 창 안 본문(p) -->
+    <!-- 글꼴 : Pixelify Sans = 사이트 전체 / DotGothic16 = 창 안 본문(p) · 바탕화면 타이틀 -->
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="pinball.css">   <!-- 핀볼 -->
+    <link rel="stylesheet" href="punch.css">     <!-- 펀치 -->
+    <link rel="stylesheet" href="stamp.css">     <!-- 스탬프 -->
+    <link rel="stylesheet" href="explorer.css">  <!-- 인터넷 (Pepe Explorer) -->
+    <link rel="stylesheet" href="gallery.css">   <!-- 갤러리 -->
 </head>
 <body>
 
@@ -60,6 +64,13 @@
                     <img class="sound-on"  src="images/soundon.png"  alt="소리 켜짐">
                 </button>
 
+                <!-- ▼ 바탕화면 타이틀 : Play with PEPE
+                     위치·크기·색은 style.css 의 "바탕화면 타이틀" -->
+                <div id="desk-title" aria-label="Play with PEPE">
+                    <span>Play with</span>
+                    <span class="pepe-word">PEPE</span>
+                </div>
+
                 <!-- =================================================
                      아이콘
                      - data-window : 더블클릭하면 열릴 창의 id
@@ -84,9 +95,10 @@
                     <span>Brett</span>
                 </div>
 
-                <div class="icon" data-window="win-theater" data-col="3" data-row="4">
-                    <img src="images/icon-theater.png" alt="">
-                    <span></span>
+                <!-- 갤러리 : 사진 폴더 (gallery.js) · 사진 목록은 아래 #win-gallery 안에서 바꾸기 -->
+                <div class="icon" data-window="win-gallery" data-col="3" data-row="4">
+                    <img src="images/icon-gallery.png" alt="">
+                    <span>Gallery</span>
                 </div>
 
                 <div class="icon" data-window="win-punch" data-col="1" data-row="5">
@@ -106,7 +118,7 @@
 
                 <div class="icon" data-window="win-paint" data-col="4" data-row="5">
                     <img src="images/icon-painting.png" alt="">
-                    <span>BKpaint</span>
+                    <span>BGpaint</span>
                 </div>
 
                 <div class="icon" data-window="win-andy" data-col="5" data-row="5">
@@ -120,10 +132,24 @@
                     <span>Pinball</span>
                 </div>
 
+                <!-- 스탬프 : 창 대신 스탬프 모드 (data-action="stamp", stamp.js)
+                     더블클릭 → 커서가 스티커로 바뀜 · 클릭 = 바탕화면에 붙이기 · 휠 = 스티커 바꾸기 · 오른쪽 클릭 = 그만
+                     스티커 그림 목록은 stamp.js 맨 위에서 바꾸기 -->
+                <div class="icon" data-action="stamp" data-col="7" data-row="5">
+                    <img src="images/icon-stamp.svg" alt="">
+                    <span>Stamp</span>
+                </div>
+
+                <!-- 인터넷 : 키워드 검색 → 페페 짤 (explorer.js, GIPHY) -->
+                <div class="icon" data-window="win-explorer" data-col="2" data-row="3">
+                    <img src="images/icon-pepe explorers.png" alt="">
+                    <span>Pepe <br>Explorer</span>
+                </div>
+
                 <!-- 휴지통 : 아이콘을 여기로 끌어다 놓으면 버려짐
-                     data-full = 휴지통에 뭔가 있을 때 바뀌는 사진 (없으면 빈 휴지통 사진 그대로) -->
-                <div class="icon" id="recycle-bin" data-window="win-recycle" data-col="10" data-row="4"
-                     data-full="images/icon-Recycle_Bin-full.png">
+                     휴지통 페페가 늘 들어 있어서 꽉 찬 휴지통 사진을 쓰고 싶으면
+                     data-full="images/사진" 을 추가 (없으면 빈 휴지통 사진 그대로) -->
+                <div class="icon" id="recycle-bin" data-window="win-recycle" data-col="10" data-row="4">
                     <img src="images/icon-Recycle_Bin.svg" alt="">
                     <span>Recycle Bin</span>
                 </div>
@@ -150,8 +176,9 @@
                         <img src="images/whatispepeimg1.jfif" alt="" style="width: 70%;">
                         <p>Pepe the Frog is a cartoon character created by American artist Matt Furie in 2005 for his comic series *Boy’s Club*. <br>
                             With his green face, big eyes, and expressive reactions, Pepe became a popular internet meme used to convey feelings such as happiness, sadness, and frustration. <br>
-                            Over time, online communities adapted Pepe into countless variations.<br>
-                            Although some versions became associated with political and extremist groups, Pepe is also widely used in everyday memes without those meanings.<br>
+                            Over time, online communities adapted Pepe into countless variations.</p>
+                        <img src="images/evolution of pepe.png" alt="Evolution of Pepe" style="width: 70%;">
+                        <p>Although some versions became associated with political and extremist groups, Pepe is also widely used in everyday memes without those meanings.<br>
                             His significance often depends on the context in which he appears.</p>
 
                         <hr>
@@ -180,12 +207,38 @@
                     </div>
                 </div>
 
-                <div class="window" id="win-theater" data-title="Theater">
-                    <div class="window-body"><p>Theater 내용</p></div>
+                <!-- 갤러리 : 옛날 윈도우 사진 폴더 (gallery.js 가 목록을 읽어서 썸네일·사진 보기를 만듦)
+                     - 사진 추가 = <li data-src="images/파일">보일 이름</li> 한 줄 추가
+                     - 썸네일 클릭 = 선택 · 더블클릭 = 크게 보기 (← → 키로 넘기기, Esc 닫기) -->
+                <div class="window" id="win-gallery" data-title="Gallery">
+                    <div class="window-body gallery" id="gallery-root">
+                        <ul class="gallery-src">
+                            <li data-src="images/whatispepeimg1.jfif">pepe.jfif</li>
+                            <li data-src="images/evolution of pepe.png">evolution of pepe.png</li>
+                            <li data-src="images/meditation-img1.png">meditation 1.png</li>
+                            <li data-src="images/meditation-img2.png">meditation 2.png</li>
+                            <li data-src="images/dancepepe1.gif">dance pepe.gif</li>
+                            <li data-src="images/pepedance2.gif">dance pepe 2.gif</li>
+                            <li data-src="images/pepedance3.gif">dance pepe 3.gif</li>
+                            <li data-src="images/brett-dance.png">brett.png</li>
+                            <li data-src="images/brettdance1.gif">brett dance.gif</li>
+                            <li data-src="images/andydance1.gif">andy dance.gif</li>
+                            <li data-src="images/landwolfdance1.gif">landwolf dance.gif</li>
+                            <li data-src="images/landwolfsmoke.png">landwolf smoke.png</li>
+                            <li data-src="images/pepecoin2.gif">pepe coin.gif</li>
+                            <li data-src="images/pepescream.png">REEEE.png</li>
+                            <li data-src="images/pepebeaten.png">beaten.png</li>
+                            <li data-src="images/pepecry.png">cry.png</li>
+                            <li data-src="images/pinball-pepe-happy.png">happy.png</li>
+                            <li data-src="images/pinball-pepe-cry.png">sad.png</li>
+                        </ul>
+                    </div>
                 </div>
 
+                <!-- 펀치 : 클릭할 때마다 비명(REEE) → 한 대 → 울음 → 처음 (punch.js 가 안의 내용을 자동으로 만듦)
+                     - 그림·소리·비명 시간은 punch.js 맨 위에서 바꾸기 -->
                 <div class="window" id="win-punch" data-title="Punch">
-                    <div class="window-body"><p>Punch 내용</p></div>
+                    <div class="window-body punch" id="punch-root"></div>
                 </div>
 
                 <!-- 음악 플레이어 (script.js 의 "Music 플레이어")
@@ -250,7 +303,7 @@
 
                 <!-- 그림판
                      - 도구 아이콘 : images/icon-pen.png, icon-eraser.png, icon-fill.png -->
-                <div class="window" id="win-paint" data-title="BKpaint">
+                <div class="window" id="win-paint" data-title="BGpaint">
                     <div class="window-body paint">
                         <div class="paint-tools">
                             <button class="btn pressed" data-tool="pen">
@@ -316,14 +369,19 @@
                     <div class="window-body pinball" id="pinball-root"></div>
                 </div>
 
+                <!-- 인터넷 : 옛날 브라우저 + 페페 짤 검색 (explorer.js 가 안의 내용을 자동으로 만듦)
+                     - GIPHY 키·연령 등급·인기 검색어는 explorer.js 맨 위에서 바꾸기 -->
+                <div class="window" id="win-explorer" data-title="Pepe Explorer" style="width: 64rem; height: 42rem;">
+                    <div class="window-body explorer" id="explorer-root"></div>
+                </div>
+
                 <div class="window" id="win-recycle" data-title="Recycle Bin">
                     <div class="window-body">
                         <div class="recycle-tools">
                             <button class="btn" id="bin-restore">복원</button>
                             <button class="btn" id="bin-clear">휴지통 비우기</button>
                         </div>
-                        <div id="bin-list"><!-- 버린 아이콘이 여기에 자동으로 생김 --></div>
-                        <p id="bin-empty-msg">휴지통이 비어 있습니다.</p>
+                        <div id="bin-list"><!-- 휴지통 페페 + 버린 아이콘이 여기에 자동으로 생김 --></div>
                     </div>
                 </div>
 
@@ -358,6 +416,7 @@
                 <li data-window="win-music"><img src="images/icon-music.png" alt="">Music</li>
                 <li data-window="win-pepecoin"><img src="images/icon-pepecoin.png" alt="">Pepe Coin</li>
                 <li data-window="win-pinball"><img src="images/icon-pinball.png" alt="">Pepe Pinball</li>
+                <li data-window="win-explorer"><img src="images/icon-pepe explorers.png" alt="">Pepe Explorer</li>
                 <li class="sep"></li>
                 <li data-window="win-recycle"><img src="images/icon-Recycle_Bin.svg" alt="">Recycle Bin</li>
                 <li class="sep"></li>
@@ -373,6 +432,14 @@
             <button id="start-btn" class="btn">
                 <img src="images/icon-windowpepe.png" alt=""> Start
             </button>
+            <!-- 빠른 실행 : 시작 버튼 옆 작은 아이콘 (한 번 클릭 = 실행)
+                 - 앱 추가 = <button data-window="창 id" title="이름"><img src="아이콘"></button> 한 줄
+                 - #show-desktop = 열린 창 전부 내리기 · 다시 누르면 다시 올리기 -->
+            <div id="quick-launch">
+                <button data-window="win-explorer" title="Pepe Explorer"><img src="images/icon-pepe explorers.png" alt=""></button>
+                <button data-window="win-music" title="Music"><img src="images/icon-music.png" alt=""></button>
+                <button id="show-desktop" title="Show Desktop"><img src="images/icon-showdesktop.svg" alt=""></button>
+            </div>
             <div id="tasks"><!-- 열린 창 버튼이 여기에 자동으로 생김 --></div>
             <div id="clock">00:00 AM</div>
         </div>
@@ -435,5 +502,8 @@
 
     <script src="script.js"></script>
     <script src="pinball.js"></script>   <!-- 핀볼 (script.js 다음에) -->
-</body>
+    <script src="punch.js"></script>     <!-- 펀치 (script.js 다음에) -->
+    <script src="stamp.js"></script>     <!-- 스탬프 (script.js 다음에) -->
+    <script src="explorer.js"></script>  <!-- 인터넷 (script.js 다음에) -->
+    <script src="gallery.js"></script>   <!-- 갤러리 (script.js 다음에) --></body>
 </html>

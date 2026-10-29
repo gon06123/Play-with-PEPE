@@ -117,7 +117,7 @@ cursor.id = 'stamp-cursor';
 cursor.alt = '';
 document.body.appendChild(cursor);
 
-// 안내 글 (스탬프 모드일 때만 화면 아래에)
+// 안내 글 (스탬프 모드일 때만 화면 맨 위에)
 const hint = document.createElement('div');
 hint.id = 'stamp-hint';
 hint.className = 'bevel';

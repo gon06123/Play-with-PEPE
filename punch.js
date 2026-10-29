@@ -4,7 +4,9 @@
 //  - script.js 는 건드리지 않아도 돼요 (script.js 다음 줄에서 불러오기)
 //  - 사이트 소리 버튼(음소거)을 그대로 따라가요
 //
-//  조작 : 흰 칸 클릭할 때마다 다음 단계
+//  창 테두리 없이 페페 그림 + 오른쪽 세로 소리 바만 떠요 (소리 바의 VOLUME 을 끌면 이동 · × = 닫기)
+//
+//  조작 : 페페 클릭할 때마다 다음 단계
 //         1) 비명 : REEE 소리가 점점 커지고, 페페가 커지며 덜덜 떨고, 화면이 빨개짐
 //         2) 한 대 : 펀치 소리 + 맞은 페페
 //         3) 울음 : 우는 페페 + 울음소리 반복
@@ -75,11 +77,12 @@ root.innerHTML = `
         </div>
         <img class="punch-glove" src="${GLOVE}" alt="">
     </div>
-    <label class="punch-vol">
-        <span>VOLUME</span>
-        <input type="range" min="0" max="100" step="1" value="${VOL_BASE}">
+    <div class="punch-vol bevel">
+        <button class="btn punch-x" type="button" title="닫기">×</button>
+        <span class="punch-grip" title="끌어서 옮기기">VOLUME</span>
+        <label class="punch-slider" title="VOLUME"><input type="range" min="0" max="100" step="1" value="${VOL_BASE}" aria-label="VOLUME"></label>
         <output>${VOL_BASE}</output>
-    </label>`;
+    </div>`;
 
 // 창을 뚫고 화면 전체로 번지는 빨강 (창 밖에 있어야 해서 body 에 붙임)
 const burst = document.createElement('div');
@@ -92,6 +95,7 @@ const pepe  = root.querySelector('.punch-pepe');
 const imgs  = [...pepe.querySelectorAll('img')];   // 0 비명 · 1 맞음 · 2 울음
 const red   = root.querySelector('.punch-red');
 const glove = root.querySelector('.punch-glove');
+show(0);
 
 const reee = new Audio(SND_REEE);
 reee.loop = true;
@@ -104,6 +108,12 @@ const isMuted = () => typeof muted !== 'undefined' && muted;   // script.js 의 
 const volIn  = root.querySelector('.punch-vol input');
 const volOut = root.querySelector('.punch-vol output');
 
+// 창 테두리·제목줄이 없어서 : 오른쪽 세로 소리 바의 "VOLUME" 을 끌면 이동, × 로 닫기 (script.js 의 창 기능)
+if (win) {
+    makeDraggable(win, root.querySelector('.punch-grip'));
+    root.querySelector('.punch-x').addEventListener('click', () => closeWindow(win));
+}
+
 let state = 'initial';  // initial → screaming → beaten → cry → initial
 let animId = null;
 let screamStart = 0;
@@ -111,6 +121,8 @@ let master = VOL_BASE / 100;   // 소리 크기 (모든 소리에 곱해짐)
 
 function show(n) {
     imgs.forEach((img, i) => img.classList.toggle('on', i === n));
+    // 빨간 막은 지금 그림 모양대로만 (배경이 투명해서 네모로 빨개지지 않게)
+    red.style.webkitMaskImage = red.style.maskImage = `url("${imgs[n].getAttribute('src')}")`;
 }
 
 /* =========================================================
@@ -152,8 +164,6 @@ function scream(t) {
     reee.volume = Math.min(0.01 + 0.99 * Math.pow(p, 1.4), 1) * master;   // 처음엔 아주 작게
     reee.muted = isMuted();
 
-    const gb = Math.round(255 * (1 - p));
-    stage.style.backgroundColor = `rgb(255, ${gb}, ${gb})`;
     red.style.opacity = (p * SCREAM_RED).toFixed(3);
 
     const shake = 2 + 10 * p;
@@ -191,7 +201,6 @@ function resetScream() {
     cancelAnimationFrame(animId);
     animId = null;
     stop(reee);
-    stage.style.backgroundColor = '';
     red.style.opacity = 0;
     pepe.style.transform = '';
     burst.style.opacity = 0;
@@ -245,7 +254,7 @@ stage.addEventListener('pointerdown', e => {
 new IntersectionObserver(([en]) => { if (!en.isIntersecting) reset(); }).observe(root);
 
 /* =========================================================
-   글러브 커서 : 흰 칸 안에서만 마우스를 따라다님
+   글러브 커서 : 페페 칸 안에서만 마우스를 따라다님
    ========================================================= */
 function moveGlove(e) {
     const r = stage.getBoundingClientRect();

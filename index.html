@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="stamp.css">     <!-- 스탬프 -->
     <link rel="stylesheet" href="explorer.css">  <!-- 인터넷 (Pepe Explorer) -->
     <link rel="stylesheet" href="gallery.css">   <!-- 갤러리 -->
+    <link rel="stylesheet" href="runner.css">    <!-- Pepe Chrome (달리기) -->
 </head>
 <body>
 
@@ -34,7 +35,7 @@
         <!-- 로그인 : 윈도우 98 로그인 창 (사이트 창과 같은 회색 입체 + 주황→초록 제목줄) -->
         <div class="boot-login" hidden>
             <div class="boot-dlg bevel">
-                <div class="boot-dlg-bar">Welcome to Pepe 98</div>
+                <div class="boot-dlg-bar">Play with PEPE</div>
                 <div class="boot-dlg-body">
                     <img src="images/icon-windowpepe.png" alt="">
                     <div class="boot-dlg-form">
@@ -123,11 +124,6 @@
                     <span>BGpaint</span>
                 </div>
 
-                <div class="icon" data-window="win-andy" data-col="5" data-row="5">
-                    <img src="images/icon-andy.png" alt="">
-                    <span>Andy</span>
-                </div>
-
                 <!-- 핀볼 : 가운데 페페를 맞혀서 점수 벌기 (pinball.js) -->
                 <div class="icon" data-window="win-pinball" data-col="6" data-row="5">
                     <img src="images/icon-pinball.png" alt="">
@@ -148,8 +144,14 @@
                     <span>Pepe <br>Explorer</span>
                 </div>
 
+                <!-- Pepe Chrome : 인터넷 끊긴 화면에서 출근길 페페 달리기 (runner.js) -->
+                <div class="icon" data-window="win-chrome" data-col="3" data-row="3">
+                    <img src="images/icon-chrome.png" alt="">
+                    <span>Pepe <br>Chrome</span>
+                </div>
+
                 <!-- 휴지통 : 아이콘을 여기로 끌어다 놓으면 버려짐
-                     휴지통 페페가 늘 들어 있어서 꽉 찬 휴지통 사진을 쓰고 싶으면
+                     버린 게 있을 때 꽉 찬 휴지통 사진을 쓰고 싶으면
                      data-full="images/사진" 을 추가 (없으면 빈 휴지통 사진 그대로) -->
                 <div class="icon" id="recycle-bin" data-window="win-recycle" data-col="10" data-row="4">
                     <img src="images/icon-Recycle_Bin.svg" alt="">
@@ -224,7 +226,6 @@
                             <li data-src="images/pepedance3.gif">dance pepe 3.gif</li>
                             <li data-src="images/brett-dance.png">brett.png</li>
                             <li data-src="images/brettdance1.gif">brett dance.gif</li>
-                            <li data-src="images/andydance1.gif">andy dance.gif</li>
                             <li data-src="images/landwolfdance1.gif">landwolf dance.gif</li>
                             <li data-src="images/landwolfsmoke.png">landwolf smoke.png</li>
                             <li data-src="images/pepecoin2.gif">pepe coin.gif</li>
@@ -272,16 +273,16 @@
                         <!-- 플레이리스트 : 더블클릭하면 그 곡 재생 -->
                         <ol id="music-list">
                             <li data-src="sounds/aurectheme-electro-swing-596999.mp3"
-                                data-icon="win-pepecoin win-brett win-landwolf win-andy win-punch win-meditation"
-                                data-icon-src="images/dancepepe1.gif images/brettdance1.gif images/landwolfdance1.gif images/andydance1.gif images/pepedance2.gif images/pepedance3.gif"
-                                data-icon-scale="1 1 1 0.6 0.6 1">
+                                data-icon="win-pepecoin win-brett win-landwolf win-punch win-meditation"
+                                data-icon-src="images/dancepepe1.gif images/brettdance1.gif images/landwolfdance1.gif images/pepedance2.gif images/pepedance3.gif"
+                                data-icon-scale="1 1 1 0.6 1">
                                 AurecTheme - Electro Swing</li>
                         </ol>
                         <audio id="music-audio"></audio>
                     </div>
                 </div>
 
-                <div class="window" id="win-pepecoin" data-title="Pepe Coin">
+                <div class="window" id="win-pepecoin" data-title="Pepe Coin" style="width: 68rem; height: 42rem;">
                     <!-- 실시간 PEPE 캔들 차트 (바이낸스 PEPE/USDT, script.js 의 "Pepe Coin 차트") -->
                     <div class="window-body coin">
                         <div class="coin-head">
@@ -360,10 +361,6 @@
                     </div>
                 </div>
 
-                <div class="window" id="win-andy" data-title="Andy">
-                    <div class="window-body"><p>Andy 내용</p></div>
-                </div>
-
                 <!-- 핀볼 : 안의 내용은 pinball.js 가 자동으로 만듦
                      - 가운데 페페 그림·점수·대사는 pinball.js 맨 위에서 바꾸기
                      - 창 크기는 pinball.css 의 #win-pinball -->
@@ -373,8 +370,14 @@
 
                 <!-- 인터넷 : 옛날 브라우저 + 페페 짤 검색 (explorer.js 가 안의 내용을 자동으로 만듦)
                      - GIPHY 키·연령 등급·인기 검색어는 explorer.js 맨 위에서 바꾸기 -->
-                <div class="window" id="win-explorer" data-title="Pepe Explorer" style="width: 64rem; height: 42rem;">
+                <div class="window" id="win-explorer" data-title="Pepe Explorer" style="width: 74rem; height: 48rem;">
                     <div class="window-body explorer" id="explorer-root"></div>
+                </div>
+
+                <!-- Pepe Chrome : 크롬 공룡 게임처럼, 인터넷 끊긴 화면에서 달리기 (runner.js 가 안의 내용을 자동으로 만듦)
+                     - 페페·장애물 그림, 속도·하트 개수는 runner.js 맨 위에서 바꾸기 -->
+                <div class="window" id="win-chrome" data-title="Pepe Chrome">
+                    <div class="window-body chrome" id="chrome-root"></div>
                 </div>
 
                 <div class="window" id="win-recycle" data-title="Recycle Bin">
@@ -383,7 +386,7 @@
                             <button class="btn" id="bin-restore">복원</button>
                             <button class="btn" id="bin-clear">휴지통 비우기</button>
                         </div>
-                        <div id="bin-list"><!-- 휴지통 페페 + 버린 아이콘이 여기에 자동으로 생김 --></div>
+                        <div id="bin-list"><!-- 버린 아이콘이 여기에 자동으로 생김 --></div>
                     </div>
                 </div>
 
@@ -419,6 +422,7 @@
                 <li data-window="win-pepecoin"><img src="images/icon-pepecoin.png" alt="">Pepe Coin</li>
                 <li data-window="win-pinball"><img src="images/icon-pinball.png" alt="">Pepe Pinball</li>
                 <li data-window="win-explorer"><img src="images/icon-pepe explorers.png" alt="">Pepe Explorer</li>
+                <li data-window="win-chrome"><img src="images/icon-chrome.png" alt="">Pepe Chrome</li>
                 <li class="sep"></li>
                 <li data-window="win-recycle"><img src="images/icon-Recycle_Bin.svg" alt="">Recycle Bin</li>
                 <li class="sep"></li>
@@ -493,7 +497,7 @@
             </div>
             <div class="window-body shutdown">
                 <img src="images/landwolfsmoke.png" alt="">
-                <p>Landwolf가 무언가 권합니다.<br>받으시겠습니까?</p>
+                <p>Landwolf가 술을 권합니다.<br>받으시겠습니까?</p>
                 <div class="shutdown-btns">
                     <button class="btn smoke-yes">받기</button>
                     <button class="btn smoke-no">거절</button>
@@ -507,5 +511,6 @@
     <script src="punch.js"></script>     <!-- 펀치 (script.js 다음에) -->
     <script src="stamp.js"></script>     <!-- 스탬프 (script.js 다음에) -->
     <script src="explorer.js"></script>  <!-- 인터넷 (script.js 다음에) -->
-    <script src="gallery.js"></script>   <!-- 갤러리 (script.js 다음에) --></body>
+    <script src="gallery.js"></script>   <!-- 갤러리 (script.js 다음에) -->
+    <script src="runner.js"></script>    <!-- Pepe Chrome 달리기 (script.js 다음에) --></body>
 </html>

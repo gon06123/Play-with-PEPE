@@ -1,0 +1,73 @@
+/* =========================================================
+   Pepe Chrome : 인터넷 끊긴 화면 + 출근길 페페 달리기 (runner.js)
+   - 창 너비는 #win-chrome 에서 (높이는 게임 화면 비율 2:1 에 맞춰 자동)
+   ========================================================= */
+#win-chrome { width: 72rem; height: auto; }
+
+.window-body.chrome {
+    display: flex;
+    flex-direction: column;
+    gap: var(--win-gap);
+    padding: 0.2rem;
+    background: var(--gray);
+    overflow: hidden;
+    user-select: none;
+}
+
+/* 움푹 들어간 칸 (주소창 · 게임 화면) */
+.chrome-addr, .chrome-frame {
+    border: var(--bv) solid;
+    border-color: var(--sunken);
+    box-shadow: inset var(--bv) var(--bv) var(--dark);
+    background: #fff;
+}
+
+/* 주소창 */
+.chrome-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+}
+.chrome-addr {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.chrome-addr img { width: 1.4rem; height: 1.4rem; }
+
+/* 크롬 "인터넷 연결 없음" 페이지 : 위 = 게임 화면, 아래 = 안내 글 */
+.chrome-page {
+    padding: 2rem 4rem 2.6rem;
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+    color: #646464;
+    font-size: 1.15rem;
+    line-height: 1.6;
+}
+.chrome-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 600 / 200;
+    image-rendering: pixelated;
+    cursor: var(--cur-hand);
+    touch-action: manipulation;
+}
+.chrome-offline h1 {
+    margin: 1.4rem 0 0.8rem;
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #202124;
+}
+.chrome-offline p { margin: 0; font: inherit; }
+.chrome-offline ul { margin: 0.2rem 0 0; padding-left: 2.4rem; }
+.chrome-code {
+    margin-top: 1.2rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    color: #646464;
+}

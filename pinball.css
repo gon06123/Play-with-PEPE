@@ -44,7 +44,7 @@
     height: 100%;
     display: block;
     touch-action: none;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 /* 옛날 모니터 줄무늬 (아주 옅게) */
 .pb-table::after {

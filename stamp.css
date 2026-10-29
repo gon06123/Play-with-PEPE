@@ -79,17 +79,17 @@ body.stamping #stamp-cursor.away { display: none; }
 body.stamping #desktop,
 body.stamping #desktop .icon { cursor: none; }
 body.stamping #desktop .window,
-body.stamping #sound-btn { cursor: auto; }   /* 창 안 버튼 등은 원래 커서 그대로 */
+body.stamping #sound-btn { cursor: var(--cur-arrow); }   /* 창 안 버튼 등은 원래 커서 그대로 */
 
-/* 안내 글 : 작업표시줄 바로 위 가운데 */
+/* 안내 글 : 화면 맨 위 가운데 */
 #stamp-hint {
     position: fixed;
     left: 50%;
-    bottom: calc(var(--taskbar-h) + 0.6rem);
+    top: 0.8rem;
     z-index: 25000;
     transform: translateX(-50%);
-    padding: 0.3rem 0.9rem;
-    font-size: 1.1rem;
+    padding: 0.4rem 1.2rem;
+    font-size: 1.3rem;
     white-space: nowrap;
     pointer-events: none;
     display: none;

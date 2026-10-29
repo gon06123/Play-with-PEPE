@@ -68,7 +68,7 @@
     background: none;
     border: 0;
     font: inherit;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 .gal-thumb {
     width: 7rem;

@@ -26,7 +26,17 @@ html { font-size: 1vw; }
 
     /* 영문·숫자 = 픽셀 폰트, 한글 = 맑은 고딕 (픽셀 폰트에 한글이 없어서 자동으로 넘어감) */
     --font: "Pixelify Sans", "Malgun Gothic", sans-serif;
+
+    /* 옛날 윈도우 픽셀 마우스 커서 (images/cursor-*.svg) · 숫자 = 클릭되는 점 위치(px) · 그림이 안 뜨면 뒤의 기본 커서 */
+    --cur-arrow: url("images/cursor-arrow.svg") 0 0, default;    /* 화살표 */
+    --cur-hand: url("images/cursor-hand.svg") 11 1, pointer;     /* 손가락 (누를 수 있는 것) */
+    --cur-wait: url("images/cursor-wait.svg") 13 19, progress;   /* 모래시계 (불러오는 중) */
 }
+
+/* 기본은 화살표, 링크는 손가락, 글 쓰는 칸은 원래 글자 커서 */
+html { cursor: var(--cur-arrow); }
+a { cursor: var(--cur-hand); }
+input:not([type]), input[type=text], input[type=search], textarea { cursor: text; }
 
 * { box-sizing: border-box; }
 
@@ -67,12 +77,12 @@ body {
 
 /* ================= 부팅 화면 (BIOS → 로그인) ================= */
 /* 모든 것(전원 끈 화면 20000 포함) 위에 덮임. 로그인하면 서서히 사라짐 */
-#boot { position: fixed; inset: 0; z-index: 30000; background: #000; cursor: pointer; transition: opacity 0.8s; }
+#boot { position: fixed; inset: 0; z-index: 30000; background: #000; cursor: var(--cur-hand); transition: opacity 0.8s; }
 #boot.out { opacity: 0; pointer-events: none; }
 #boot [hidden] { display: none !important; }
 
 /* 1) BIOS : 검은 화면 흰 글씨 */
-.boot-bios { position: absolute; inset: 0; padding: 4rem 3rem; color: #c8c8c8; font-family: "DotGothic16", "Courier New", monospace; font-size: 1.5rem; line-height: 1.6; }
+.boot-bios { position: absolute; inset: 0; padding: 4rem 3rem; color: #c8c8c8; font-family: "DotGothic16", "Courier New", monospace; font-size: 1.5rem; line-height: 1.6; cursor: var(--cur-wait); }   /* 부팅 중 = 모래시계 커서 */
 .boot-bios pre { margin: 0; font: inherit; white-space: pre-wrap; }
 .boot-bios-logo { position: absolute; right: 3rem; top: 4rem; width: 9rem; image-rendering: pixelated; }
 .boot-bios .hi { color: #fff; }
@@ -82,7 +92,7 @@ body {
 @keyframes boot-blink { 50% { opacity: 0; } }
 
 /* 2) 로그인 : 창 제목줄(--title)과 같은 주황 → 초록 바탕 + 가운데 로그인 창 (테두리·버튼은 사이트 공통 .bevel / .btn) */
-.boot-login { position: absolute; inset: 0; background: var(--title); cursor: default; animation: boot-fade 0.6s; }
+.boot-login { position: absolute; inset: 0; background: var(--title); cursor: var(--cur-arrow); animation: boot-fade 0.6s; }
 @keyframes boot-fade { from { opacity: 0; } }
 .boot-dlg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40rem; padding: calc(var(--bv) + var(--win-gap)); }
 .boot-dlg-bar { height: 2.4rem; display: flex; align-items: center; padding: 0 0.6rem; color: #fff; font-size: 1.3rem; font-weight: 700; background: var(--title); }
@@ -175,7 +185,7 @@ body {
     position: absolute;
     width: 10rem;
     text-align: center;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 /* 드래그 중인 아이콘 */
@@ -208,6 +218,16 @@ body {
 .icon.selected img { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(4); }
 .icon.selected span { background: var(--title); outline: 1px dotted #fff; text-shadow: none; }
 
+/* 바탕화면 빈 곳을 끌 때 생기는 점선 네모 (여러 개 선택) */
+#select-box {
+    position: absolute;
+    z-index: 4;
+    border: 1px dotted #fff;
+    outline: 1px dotted #000;
+    background: rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+}
+
 /* ================= 공통 입체 테두리 =================
    튀어나온 상자 = 바깥선(밝음/검정) + 안쪽선(연회색/진회색) 두 겹 */
 
@@ -222,7 +242,7 @@ body {
 .btn {
     font-size: 1rem;
     padding: 0 0.6rem;
-    cursor: pointer;
+    cursor: var(--cur-hand);
     color: #000;
 }
 
@@ -427,10 +447,10 @@ body.club #disco-light { z-index: 10000; }
 body.club #win-brett { z-index: 10001 !important; }
 
 /* ----- Meditation 클릭 효과 ----- */
-#meditation-img { cursor: pointer; }
+#meditation-img { cursor: var(--cur-hand); }
 
 /* 화면 중앙에서 픽셀 블록 원으로 퍼지는 남색 화면 (색·칸 크기·속도는 script.js 에서) */
-#bg-circle { z-index: 10000; cursor: pointer; }
+#bg-circle { z-index: 10000; cursor: var(--cur-hand); }
 #bg-circle.on { pointer-events: auto; }
 
 /* 뜨는 사진 : 투명 → 선명하게 나타남
@@ -443,7 +463,7 @@ body.club #win-brett { z-index: 10001 !important; }
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
     pointer-events: none;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 #bg-circle-img.on {
     opacity: 1;
@@ -542,7 +562,7 @@ body.drunk { background: #5b3fc9; }
     right: 0;
     top: 0;
     padding: 0;
-    cursor: default;
+    cursor: var(--cur-arrow);
 }
 
 /* ================= 작업 표시줄 ================= */
@@ -612,7 +632,7 @@ body.drunk { background: #5b3fc9; }
     padding: 0;
     background: none;
     border: var(--bv) solid transparent;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 #quick-launch button:hover { border-color: var(--light) var(--dark) var(--dark) var(--light); }
 #quick-launch button:active { border-color: var(--dark) var(--light) var(--light) var(--dark); }
@@ -676,7 +696,7 @@ body.drunk { background: #5b3fc9; }
     gap: 0.9rem;
     padding: 0.5rem 1rem 0.5rem 0.6rem;
     font-size: 1.15rem;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 /* 메뉴 왼쪽 아이콘 (사진이 없어도 자리는 유지돼서 글자 줄이 맞음) */
@@ -733,7 +753,7 @@ body.drunk { background: #5b3fc9; }
 
 /* 그림판 : 바탕화면 배경 사진 위에 투명 캔버스를 올려 그림 (배경 사진은 script.js 가 #desktop 것을 그대로 가져옴)
    칸 비율 = 바탕화면 비율 (script.js 가 맞춤) → 저장했을 때 그림이 배경과 같은 자리에 딱 맞음 */
-#win-paint { height: auto; resize: horizontal; }
+#win-paint { width: 66rem; height: auto; resize: horizontal; }
 .paint-area { flex: none; background: #fff center top / cover; }
 
 #paint-canvas {
@@ -758,7 +778,7 @@ body.drunk { background: #5b3fc9; }
     background: #000;
     border: var(--bv) solid;
     border-color: var(--sunken);
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 .swatches {
@@ -771,7 +791,7 @@ body.drunk { background: #5b3fc9; }
     height: 1.3rem;
     border: 1px solid;
     border-color: var(--sunken);
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 /* 색 선택 패널 : 팔레트 위로 뜨는 큰 창 (크기는 --cp-size 만 바꾸면 됨) */
@@ -821,7 +841,7 @@ body.drunk { background: #5b3fc9; }
     height: 1.6rem;
     margin-top: 0.6rem;
     background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
-    cursor: pointer;
+    cursor: var(--cur-hand);
     touch-action: none;
 }
 
@@ -939,7 +959,7 @@ body.drunk { background: #5b3fc9; }
     aspect-ratio: 1 / 1;
     image-rendering: pixelated;
     touch-action: manipulation;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 .brett-row {
@@ -959,7 +979,7 @@ body.drunk { background: #5b3fc9; }
     width: 100%;
     height: 1.4rem;
     background: transparent;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 .window-body input[type=range]::-webkit-slider-runnable-track {
     height: 0.35rem;
@@ -1031,7 +1051,7 @@ body.drunk { background: #5b3fc9; }
     overflow-y: auto;
     background: #fff;
 }
-#music-list li { padding: 0.2rem 0.4rem; cursor: pointer; }
+#music-list li { padding: 0.2rem 0.4rem; cursor: var(--cur-hand); }
 #music-list li.selected { background: var(--title); color: #fff; }
 #music-list li.playing { font-weight: bold; }
 #music-list li.playing::after { content: "  ♪"; }
@@ -1069,7 +1089,7 @@ body.drunk { background: #5b3fc9; }
     align-items: center;
     justify-content: center;
     background: #000;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 #off-screen[hidden] { display: none; }
 #off-screen p {
@@ -1098,7 +1118,7 @@ body.drunk { background: #5b3fc9; }
 .bin-item {
     width: 8rem;
     text-align: center;
-    cursor: pointer;
+    cursor: var(--cur-hand);
 }
 
 .bin-item img {
@@ -1116,14 +1136,6 @@ body.drunk { background: #5b3fc9; }
 }
 
 .bin-item.selected span { background: var(--title); color: #fff; outline: 1px dotted #000; }
-
-/* 휴지통에 사는 페페 : 대꾸할 땐 대사가 줄바꿈되고 부르르 떪 */
-.bin-pepe.nope span { white-space: normal; }
-.bin-pepe.nope img { animation: bin-pepe-nope .35s steps(2) 3; }
-@keyframes bin-pepe-nope {
-    0%   { transform: translateX(-0.3rem) rotate(-6deg); }
-    100% { transform: translateX(0.3rem) rotate(6deg); }
-}
 
 /* ============ 창 안쪽 스크롤바도 클래식 스타일로 ============ */
 .window-body::-webkit-scrollbar { width: 1.6rem; height: 1.6rem; }

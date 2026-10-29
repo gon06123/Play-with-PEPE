@@ -1,16 +1,29 @@
 /* =========================================================
    Punch (punch.js) : style.css 다음 줄에서 불러오기
    사이트의 색 변수(--gray, --bv …)를 그대로 써요
+   창 테두리·제목줄 없이 페페 그림 + 소리 바만 바탕화면에 떠요
    ========================================================= */
 
-/* 창 안 : 위 흰 칸 (비명 칠 땐 punch.js 가 배경을 점점 빨갛게) + 아래 소리 크기 바 */
+/* 창 껍데기 숨기기 (제목줄 · 회색 테두리 · 크기 조절 모서리) */
+#win-punch {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    resize: none;
+    overflow: visible;      /* 비명 칠 때 커진 페페가 창 밖으로 나가도 안 잘리게 */
+}
+#win-punch > .title-bar { display: none; }
+
+/* 창 안 : 왼쪽 페페 (투명) + 오른쪽 세로 소리 바 */
 .window-body.punch {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--win-gap);
+    margin: 0;
     padding: 0;
-    background: var(--gray);
-    overflow: hidden;
+    background: none;
+    overflow: visible;
     user-select: none;
     border: 0;
     box-shadow: none;
@@ -19,12 +32,7 @@
 .punch-stage {
     position: relative;
     flex: 1;
-    overflow: hidden;          /* 커진 페페·글러브가 창 밖으로 안 나감 */
-    background: #fff;
-    border: var(--bv) solid;
-    border-color: var(--sunken);
-    box-shadow: inset var(--bv) var(--bv) var(--dark);
-    cursor: pointer;
+    cursor: var(--cur-hand);
     touch-action: manipulation;
 }
 .punch-stage.gloved { cursor: none; }
@@ -33,9 +41,9 @@
 .punch-pepe {
     position: absolute;
     left: 50%;
-    top: 50%;
-    width: 70%;
-    height: 80%;
+    top: 56%;               /* 가운데보다 살짝 아래 */
+    width: 90%;
+    height: 90%;
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
@@ -50,29 +58,60 @@
 }
 .window-body .punch-pepe img.on { display: block; }
 
-/* 비명 칠 때 페페 위에 덮이는 빨간 막 (곱하기 → 페페가 빨갛게 물듦) */
+/* 비명 칠 때 페페 위에 덮이는 빨간 막 (곱하기 → 페페가 빨갛게 물듦)
+   모양은 punch.js 가 지금 그림으로 잘라줌 (mask) */
 .punch-red {
     position: absolute;
     inset: 0;
     background: #f00;
     mix-blend-mode: multiply;
     opacity: 0;
+    -webkit-mask: center / contain no-repeat;
+    mask: center / contain no-repeat;
 }
 
-/* 소리 크기 바 (슬라이더 모양은 style.css 의 공통 range 스타일) */
+/* 소리 바 : 오른쪽에 세로로 선 얇은 회색 입체 막대 (위 → 아래 : × · VOLUME · 슬라이더 · 숫자)
+   너비는 × 버튼에 딱 맞춤 · 슬라이더 모양은 style.css 의 공통 range 스타일 */
 .punch-vol {
+    position: relative;
+    left: 3rem;             /* 페페에게서 더 오른쪽으로 떨어뜨리기 */
+    z-index: 4;             /* 커진 페페가 위로 덮어도 바는 항상 보이게 */
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.8rem;
-    padding: 0.3rem 0.6rem;
-    font-size: 1.1rem;
-}
-.punch-vol span { font-weight: bold; }
-.punch-vol input { flex: 1; }
-.punch-vol output {
-    width: 2.6rem;
-    text-align: right;
+    gap: 0.4rem;
+    padding: 0.2rem;
+    font-size: 0.95rem;
     font-weight: bold;
+}
+.punch-grip {
+    width: 2rem;
+    line-height: 2rem;      /* 세로 글자를 칸 가운데로 */
+    padding: 0.4rem 0;
+    writing-mode: vertical-rl;   /* 글자도 세로로 */
+    cursor: move;
+}
+/* 가로 슬라이더를 -90도 돌려서 세로로 (위로 올리면 커짐) · 길이 = 칸 높이(100cqh) */
+.punch-slider {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    container-type: size;
+}
+.window-body .punch-slider input {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100cqh;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+.punch-vol output { text-align: center; }
+.punch-x {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    font-weight: bold;
+    line-height: 1;
 }
 
 /* 창을 뚫고 화면 전체로 번지는 빨강 (body 에 붙음 · 원 크기·진하기는 punch.js 가 줌)

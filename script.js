@@ -252,44 +252,104 @@ icons.forEach(icon => {
     placeIcon(icon, (+icon.dataset.col || 1) - 1, (+icon.dataset.row || 1) - 1);
 });
 
-// 드래그로 아이콘 이동
+const selectedIcons = () => icons.filter(i => i.classList.contains('selected') && !i.hidden);
+
+// 드래그로 아이콘 이동 : 여러 개 선택돼 있으면 같이 움직임
 icons.forEach(icon => {
     icon.addEventListener('mousedown', e => {
         if (e.button !== 0) return;
         e.preventDefault();
+        icon.justDragged = icon.ctrlAdded = false;
+        // 선택 안 된 아이콘을 잡으면 그것만 선택 (Ctrl 누르고 있으면 기존 선택에 더하기)
+        if (!icon.classList.contains('selected')) {
+            if (e.ctrlKey) icon.ctrlAdded = true;   // 뒤따라오는 Ctrl + 클릭이 다시 빼지 않게
+            else icons.forEach(i => i.classList.remove('selected'));
+            icon.classList.add('selected');
+        }
+        const group = selectedIcons();
         const startX = e.clientX, startY = e.clientY;
-        const baseL = icon.offsetLeft, baseT = icon.offsetTop;
+        const base = group.map(i => ({ l: i.offsetLeft, t: i.offsetTop }));
+        const canTrash = !group.includes(bin);   // 휴지통을 같이 끌고 있으면 버리기 안 함
         let dragging = false;
 
         function move(e) {
             const dx = e.clientX - startX, dy = e.clientY - startY;
             if (!dragging && Math.hypot(dx, dy) < 5) return;  // 살짝 움직인 건 클릭으로 처리
             dragging = true;
-            icon.classList.add('dragging');
             // 픽셀 단위로 끊어서 움직여 레트로하게 뚝뚝 끊기는 느낌
-            icon.style.left = (baseL + Math.round(dx / DRAG_STEP) * DRAG_STEP) + 'px';
-            icon.style.top = (baseT + Math.round(dy / DRAG_STEP) * DRAG_STEP) + 'px';
+            const sx = Math.round(dx / DRAG_STEP) * DRAG_STEP, sy = Math.round(dy / DRAG_STEP) * DRAG_STEP;
+            group.forEach((i, n) => {
+                i.classList.add('dragging');
+                i.style.left = (base[n].l + sx) + 'px';
+                i.style.top = (base[n].t + sy) + 'px';
+            });
             // 휴지통 위에 올리면 휴지통이 선택된 것처럼 표시
-            if (icon !== bin) bin.classList.toggle('selected', overBin(e));
+            if (canTrash) bin.classList.toggle('selected', overBin(e));
         }
         function up(e) {
             document.removeEventListener('mousemove', move);
             document.removeEventListener('mouseup', up);
             if (!dragging) return;
-            icon.classList.remove('dragging');
-            if (icon !== bin && overBin(e)) {
+            icon.justDragged = true;   // 바로 뒤따라오는 click 이 선택을 하나로 줄이지 않게
+            group.forEach(i => i.classList.remove('dragging'));
+            if (canTrash && overBin(e)) {
                 bin.classList.remove('selected');
-                trashIcon(icon);
+                group.forEach(trashIcon);
                 return;
             }
+            // 칸 비워놓고 하나씩 가장 가까운 빈 칸으로 (같이 끈 아이콘끼리 자리 안 겹치게)
             const r = remPx();
-            const cell = nearestFreeCell(icon.offsetLeft / r, icon.offsetTop / r, icon);
-            if (cell) placeIcon(icon, cell.c, cell.r);
-            else placeIcon(icon, icon.col, icon.row); // 빈 칸 없으면 제자리
+            const old = group.map(i => ({ c: i.col, r: i.row }));
+            group.forEach(i => i.col = i.row = null);
+            group.forEach((i, n) => {
+                const cell = nearestFreeCell(i.offsetLeft / r, i.offsetTop / r, i);
+                if (cell) placeIcon(i, cell.c, cell.r);
+                else placeIcon(i, old[n].c, old[n].r); // 빈 칸 없으면 제자리
+            });
         }
         document.addEventListener('mousemove', move);
         document.addEventListener('mouseup', up);
     });
+});
+
+// 바탕화면 빈 곳을 끌면 점선 네모 → 그 안에 걸친 아이콘 전부 선택
+const selBox = document.createElement('div');
+selBox.id = 'select-box';
+selBox.hidden = true;
+desktop.appendChild(selBox);
+let boxJustEnded = false;   // 네모로 고른 직후의 click 이 선택을 지우지 않게
+
+desktop.addEventListener('mousedown', e => {
+    boxJustEnded = false;
+    if (e.button !== 0 || (e.target !== desktop && !e.target.closest('#desk-title'))) return;
+    e.preventDefault();
+    const d = desktop.getBoundingClientRect();
+    const x0 = e.clientX - d.left, y0 = e.clientY - d.top;
+    const keep = e.ctrlKey ? selectedIcons() : [];   // Ctrl = 기존 선택 유지하고 더하기
+    let boxing = false;
+
+    function move(e) {
+        const x1 = e.clientX - d.left, y1 = e.clientY - d.top;
+        if (!boxing && Math.hypot(x1 - x0, y1 - y0) < 5) return;
+        boxing = true;
+        const l = Math.min(x0, x1), t = Math.min(y0, y1), w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+        Object.assign(selBox.style, { left: l + 'px', top: t + 'px', width: w + 'px', height: h + 'px' });
+        selBox.hidden = false;
+        icons.forEach(i => {
+            if (i.hidden) return;
+            const b = i.getBoundingClientRect();
+            const hit = b.right > d.left + l && b.left < d.left + l + w && b.bottom > d.top + t && b.top < d.top + t + h;
+            i.classList.toggle('selected', hit || keep.includes(i));
+        });
+    }
+    function up() {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        selBox.hidden = true;
+        if (boxing) boxJustEnded = true;
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
 });
 
 // ---------- 휴지통 ----------
@@ -327,50 +387,14 @@ function restoreIcon(icon) {
     updateBin();
 }
 
-// 휴지통에 처음부터 살고 있는 페페 : 복원도 안 되고 비워도 안 지워짐 (건드리면 한마디씩)
-// 그림·이름·대사는 여기서 바꾸기
-const BIN_PEPE_IMG = 'images/pinball-pepe-cry.png';
-const BIN_PEPE_HURT = 'images/pinball-pepe-hurt.png';   // 대꾸할 때 잠깐 바뀌는 그림
-const BIN_PEPE_NAME = 'sad_pepe.png';
-const BIN_PEPE_LINES = {
-    restore: ['싫어. 여기 살 거야', '밖은 무서워…', '날 버린 건 너잖아', '여기 의외로 따뜻해'],
-    clear: ['안 나가.', '여기 내 집이야', '삭제 실패 ㅋ', '나 빼고 다 버려'],
-};
-
-const binPepe = document.createElement('div');
-binPepe.className = 'bin-item bin-pepe';
-binPepe.innerHTML = `<img src="${BIN_PEPE_IMG}" alt=""><span>${BIN_PEPE_NAME}</span>`;
-const binPepeImg = binPepe.querySelector('img');
-const binPepeName = binPepe.querySelector('span');
-let binPepeTimer = null;
-
-// 페페가 한마디 + 부르르 떨기 (잠시 뒤 원래대로)
-function binPepeSay(kind) {
-    const lines = BIN_PEPE_LINES[kind];
-    binPepeName.textContent = lines[Math.floor(Math.random() * lines.length)];
-    binPepeImg.src = BIN_PEPE_HURT;
-    binPepe.classList.remove('nope');
-    void binPepe.offsetWidth;
-    binPepe.classList.add('nope');
-    clearTimeout(binPepeTimer);
-    binPepeTimer = setTimeout(() => {
-        binPepeName.textContent = BIN_PEPE_NAME;
-        binPepeImg.src = BIN_PEPE_IMG;
-        binPepe.classList.remove('nope');
-    }, 1800);
-}
-
 function selectBinItem(item) {
     binList.querySelectorAll('.bin-item').forEach(i => i.classList.remove('selected'));
     item.classList.add('selected');
 }
-binPepe.onclick = () => selectBinItem(binPepe);
-binPepe.ondblclick = () => binPepeSay('restore');
 
-// 휴지통 창 목록 + 휴지통 아이콘 사진 갱신 (페페가 늘 있으니 휴지통은 항상 차 있음)
+// 휴지통 창 목록 + 휴지통 아이콘 사진 갱신
 function updateBin() {
     binList.innerHTML = '';
-    binList.appendChild(binPepe);
     trashed.forEach(icon => {
         const item = document.createElement('div');
         item.className = 'bin-item';
@@ -380,15 +404,14 @@ function updateBin() {
         item.icon = icon;
         binList.appendChild(item);
     });
-    binImg.src = bin.dataset.full || binEmptySrc;
+    binImg.src = (trashed.length && bin.dataset.full) || binEmptySrc;
 }
 // 꽉 찬 휴지통 사진이 없으면 빈 휴지통 사진 그대로
 binImg.onerror = () => { if (binImg.getAttribute('src') !== binEmptySrc) binImg.src = binEmptySrc; };
 
 document.getElementById('bin-restore').onclick = () => {
     const sel = binList.querySelector('.bin-item.selected');
-    if (sel === binPepe) binPepeSay('restore');
-    else if (sel) restoreIcon(sel.icon);
+    if (sel) restoreIcon(sel.icon);
 };
 
 document.getElementById('bin-clear').onclick = () => {
@@ -398,7 +421,6 @@ document.getElementById('bin-clear').onclick = () => {
     });
     trashed.length = 0;
     updateBin();
-    binPepeSay('clear');
 };
 updateBin();
 
@@ -406,7 +428,9 @@ updateBin();
 icons.forEach(icon => {
     icon.addEventListener('click', e => {
         e.stopPropagation();
+        if (icon.justDragged) { icon.justDragged = false; return; }   // 끌어서 옮긴 거면 선택 그대로
         clickSound();
+        if (e.ctrlKey) { if (!icon.ctrlAdded) icon.classList.toggle('selected'); return; }   // Ctrl + 클릭 = 하나씩 더하기/빼기
         icons.forEach(i => i.classList.remove('selected'));
         icon.classList.add('selected');
     });
@@ -504,7 +528,8 @@ function setVapor(on) {
 
 // 화면 아무 곳 클릭 → 선택 해제 + 시작메뉴 닫기
 document.addEventListener('click', e => {
-    if (e.target.id === 'desktop') {
+    if (boxJustEnded) boxJustEnded = false;
+    else if (e.target.id === 'desktop') {
         icons.forEach(i => i.classList.remove('selected'));
     }
     if (!e.target.closest('#start-menu') && !e.target.closest('#start-btn')) closeStartMenu();

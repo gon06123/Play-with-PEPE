@@ -6,6 +6,34 @@
 let topZ = 10;
 const tasks = document.getElementById('tasks');
 
+// ---------- 도움말 말풍선 : 옛날 윈도우 노란 툴팁 ----------
+// setHelp(버튼, 글) → 마우스를 대면 버튼 아래에 뜸 (터치는 눌렀을 때) · 글의 줄바꿈은 그대로 줄바꿈
+const helpTip = document.createElement('div');
+helpTip.id = 'help-tip';
+helpTip.hidden = true;
+document.body.appendChild(helpTip);
+
+function setHelp(btn, text) {
+    const show = () => {
+        helpTip.textContent = text.trim();
+        helpTip.style.left = helpTip.style.top = '0';   // 왼쪽 위에서 크기를 재야 지난번 자리 때문에 줄바꿈이 달라지지 않음
+        helpTip.hidden = false;
+        const b = btn.getBoundingClientRect(), t = helpTip.getBoundingClientRect();
+        // 버튼 바로 아래 · 화면 밖으로 나가면 안쪽으로 밀어 넣음
+        helpTip.style.left = Math.max(4, Math.min(b.left, innerWidth - t.width - 4)) + 'px';
+        helpTip.style.top = (b.bottom + t.height + 4 > innerHeight ? b.top - t.height - 4 : b.bottom + 4) + 'px';
+        helpTip.owner = btn;
+    };
+    const hide = () => helpTip.hidden = true;
+    btn.addEventListener('mouseenter', show);
+    btn.addEventListener('mouseleave', hide);
+    btn.addEventListener('click', show);   // 터치 : 누르면 뜸 (다른 곳을 누르면 닫힘)
+}
+// 도움말 버튼 말고 다른 곳을 누르면 닫힘 (터치로 연 것 · 창을 닫았을 때도)
+document.addEventListener('pointerdown', e => {
+    if (!helpTip.hidden && !helpTip.owner?.contains(e.target)) helpTip.hidden = true;
+}, true);
+
 // ---------- 창마다 제목줄 자동 생성 ----------
 document.querySelectorAll('.window').forEach(win => {
     const bar = document.createElement('div');
@@ -14,13 +42,16 @@ document.querySelectorAll('.window').forEach(win => {
     //       data-no-buttons 를 적으면 제목줄 버튼이 하나도 없음 (창 안의 버튼으로만 닫힘, Landwolf 메시지처럼)
     const noButtons = 'noButtons' in win.dataset;
     const closeOnly = noButtons || 'closeOnly' in win.dataset;
+    //       data-help 를 적으면 제목줄에 ? 버튼 (마우스를 대면 그 글이 도움말로 뜸)
     bar.innerHTML = `
         <span class="title-text">${win.dataset.title || ''}</span>
+        ${win.dataset.help ? '<button class="btn btn-help" type="button">?</button>' : ''}
         ${closeOnly ? '' : '<button class="btn btn-min"><i></i></button><button class="btn btn-max"><i></i></button>'}
         ${noButtons ? '' : '<button class="btn btn-close">×</button>'}`;
     win.prepend(bar);
 
     if (!noButtons) bar.querySelector('.btn-close').onclick = () => closeWindow(win);
+    if (win.dataset.help) setHelp(bar.querySelector('.btn-help'), win.dataset.help);
     if (!closeOnly) {
         bar.querySelector('.btn-min').onclick = () => minimizeWindow(win);
         bar.querySelector('.btn-max').onclick = () => win.classList.toggle('maximized');
@@ -866,6 +897,7 @@ if (canvas) {
     let drawing = false, lastX = 0, lastY = 0;
     canvas.addEventListener('pointerdown', e => {
         if (paint.tool === 'fill') { floodFill(e.offsetX, e.offsetY, paint.color); return; }
+        if (paint.tool === 'sticker') { addSticker(e.offsetX, e.offsetY); return; }
         drawing = true;
         canvas.setPointerCapture(e.pointerId);
         [lastX, lastY] = [e.offsetX, e.offsetY];
@@ -923,11 +955,89 @@ if (canvas) {
         ctx.putImageData(img, 0, 0);
     }
 
-    // ----- 도구 선택 (연필 / 지우개 / 페인트통) -----
+    // ----- 스티커 : 갤러리 사진을 그림 위에 붙임 -----
+    // 사진을 캔버스에 직접 그리면 저장·페인트통이 막혀서(위 설명과 같은 이유) 캔버스 위에 따로 올려 둠
+    // 위치·크기는 칸 기준 % → 저장하면 바탕화면에도 같은 자리 · 같은 크기로 붙음
+    // 스티커 도구일 때 : 그림 클릭 = 붙이기 · 붙인 스티커 끌기 = 옮기기 · 휠 = 크기 · 더블클릭 = 떼기
+    const STICKER_W = 20;   // 처음 붙일 때 크기 (칸 너비의 %)
+    const stickerLayer = document.createElement('div');
+    stickerLayer.className = 'paint-stickers';
+    area.appendChild(stickerLayer);
+    const pickBar = document.getElementById('paint-pick');
+    let pick = null;        // 지금 고른 사진 경로
+
+    // 갤러리 사진 목록으로 고르기 칸 채우기 (Explorer 에서 저장한 짤도 같이)
+    function fillPicker() {
+        const req = { photos: [] };
+        document.dispatchEvent(new CustomEvent('gallery:list', { detail: req }));
+        if (!req.photos.some(p => p.src === pick)) pick = req.photos[0]?.src || null;
+        pickBar.innerHTML = '';
+        req.photos.forEach(p => {
+            const b = document.createElement('button');
+            b.className = 'btn' + (p.src === pick ? ' pressed' : '');
+            b.type = 'button';
+            b.title = p.name;
+            const img = new Image();
+            img.src = p.thumb || p.src;
+            img.alt = '';
+            b.appendChild(img);
+            b.addEventListener('click', () => {
+                pick = p.src;
+                [...pickBar.children].forEach(x => x.classList.toggle('pressed', x === b));
+            });
+            pickBar.appendChild(b);
+        });
+    }
+
+    function addSticker(x, y) {
+        if (!pick) return;
+        const s = new Image();
+        s.src = pick;
+        s.alt = '';
+        s.draggable = false;
+        s.style.left = x / canvas.clientWidth * 100 + '%';
+        s.style.top = y / canvas.clientHeight * 100 + '%';
+        s.style.width = STICKER_W + '%';
+        stickerLayer.appendChild(s);
+    }
+
+    // 끌어서 옮기기 (누른 스티커가 맨 위로)
+    stickerLayer.addEventListener('pointerdown', e => {
+        const s = e.target.closest('img');
+        if (!s) return;
+        e.preventDefault();
+        focusWindow(area.closest('.window'));   // preventDefault 때문에 창 클릭(맨 앞으로)이 안 생겨서 직접
+        if (s !== stickerLayer.lastChild) stickerLayer.appendChild(s);
+        s.setPointerCapture(e.pointerId);
+        const r = stickerLayer.getBoundingClientRect();
+        const ox = parseFloat(s.style.left) - (e.clientX - r.left) / r.width * 100;
+        const oy = parseFloat(s.style.top) - (e.clientY - r.top) / r.height * 100;
+        const clamp = v => Math.min(100, Math.max(0, v));   // 가운데가 칸 밖으로 나가면 못 잡으니까 칸 안에서만
+        s.onpointermove = ev => {
+            s.style.left = clamp(ox + (ev.clientX - r.left) / r.width * 100) + '%';
+            s.style.top = clamp(oy + (ev.clientY - r.top) / r.height * 100) + '%';
+        };
+        s.onpointerup = s.onpointercancel = () => s.onpointermove = null;
+    });
+    // 휠 = 크기 · 더블클릭 = 떼기
+    stickerLayer.addEventListener('wheel', e => {
+        const s = e.target.closest('img');
+        if (!s) return;
+        e.preventDefault();
+        const w = parseFloat(s.style.width) * (e.deltaY < 0 ? 1.1 : 1 / 1.1);
+        s.style.width = Math.min(100, Math.max(3, w)) + '%';
+    }, { passive: false });
+    stickerLayer.addEventListener('dblclick', e => e.target.closest('img')?.remove());
+
+    // ----- 도구 선택 (연필 / 지우개 / 페인트통 / 스티커) -----
     const toolBtns = document.querySelectorAll('.paint-tools [data-tool]');
     function setTool(tool) {
         paint.tool = tool;
         toolBtns.forEach(b => b.classList.toggle('pressed', b.dataset.tool === tool));
+        // 스티커 도구일 때만 사진 목록이 보이고, 붙인 스티커를 만질 수 있음
+        area.classList.toggle('sticking', tool === 'sticker');
+        pickBar.hidden = tool !== 'sticker';
+        if (tool === 'sticker') fillPicker();
     }
     toolBtns.forEach(btn => btn.addEventListener('click', () => setTool(btn.dataset.tool)));
 
@@ -1019,9 +1129,10 @@ if (canvas) {
     panel.querySelector('.cp-ok').addEventListener('click', () => panel.hidden = true);
 
     // ----- 버튼들 -----
-    // 전체 지우기 (그린 것만 지움 → 배경 사진만 남음)
+    // 전체 지우기 (그린 것 · 스티커만 지움 → 배경 사진만 남음)
     document.getElementById('paint-clear').addEventListener('click', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stickerLayer.innerHTML = '';
     });
 
     // 저장 → 바탕화면 = 기본 배경 사진 위에 그린 그림 한 겹 (새로고침하면 원래대로)
@@ -1031,11 +1142,20 @@ if (canvas) {
         desktop.style.backgroundSize = '100% 100%, cover';
         desktop.style.backgroundPosition = '0 0, center top';
         desktop.style.backgroundRepeat = 'no-repeat';
+        // 스티커는 바탕화면 맨 밑 층에 그대로 복사 (Stamp 스티커·아이콘보다 아래 = 배경의 일부)
+        let deskStickers = desktop.querySelector('.paint-bg-stickers');
+        if (!deskStickers) {
+            deskStickers = document.createElement('div');
+            deskStickers.className = 'paint-stickers paint-bg-stickers';
+            desktop.prepend(deskStickers);
+        }
+        deskStickers.innerHTML = stickerLayer.innerHTML;
     });
 
     // 배경 취소 → style.css 에 정해둔 원래 배경으로
     document.getElementById('paint-reset').addEventListener('click', () => {
         ['backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat'].forEach(p => desktop.style[p] = '');
+        desktop.querySelector('.paint-bg-stickers')?.remove();
     });
 }
 

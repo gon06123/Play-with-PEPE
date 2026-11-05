@@ -6,7 +6,7 @@
 //
 //  조작 : 클릭           = 그 자리에 스티커 붙이기
 //         마우스 휠       = 스티커 바꾸기 (맨 끝에 지우개 : 누른 채 문지르면 지워짐)
-//         오른쪽 클릭      = 스탬프 모드 끄기 (Esc 는 전체화면이 풀려서 안 씀)
+//         Stamp 아이콘 클릭 = 스탬프 모드 끄기 (오른쪽 클릭도 됨 · Esc 는 전체화면이 풀려서 안 씀)
 //  창·작업표시줄 위에서는 평소처럼 쓸 수 있고, 바탕화면 위에서만 스티커가 붙어요
 // =========================================================
 (() => {
@@ -121,7 +121,7 @@ document.body.appendChild(cursor);
 const hint = document.createElement('div');
 hint.id = 'stamp-hint';
 hint.className = 'bevel';
-hint.textContent = '클릭 = 붙이기 · 휠 = 스티커/지우개 바꾸기 · 오른쪽 클릭 = 그만';
+hint.textContent = '클릭 = 붙이기 · 휠 = 스티커/지우개 바꾸기 · Stamp 아이콘 클릭 = 그만';
 document.body.appendChild(hint);
 
 // 그림 미리 불러두기 (휠 돌릴 때 깜빡이지 않게)
@@ -162,7 +162,12 @@ function setCursor() {
     cursor.style.width = (STICKERS[cur].size || SIZE) + 'rem';
 }
 
-icon.addEventListener('dblclick', () => setStamp(!on));
+// 아이콘 클릭으로 막 끈 직후의 더블클릭은 무시 (끄자마자 다시 켜지지 않게)
+let offAt = 0;
+icon.addEventListener('dblclick', () => {
+    if (performance.now() - offAt < 600) return;
+    setStamp(!on);
+});
 
 /* =========================================================
    스탬프 모드 조작
@@ -186,10 +191,17 @@ addEventListener('mouseup', () => { erasing = false; lastErase = null; });
 // 바탕화면 클릭 = 붙이기 (아이콘 선택·드래그보다 먼저 가로챔)
 addEventListener('mousedown', e => {
     if (!on) return;
+    // 오른쪽 클릭 = 비상 탈출 (아이콘이 창에 가려지거나 스크롤로 안 보여도 끌 수 있게 · 안내 글엔 안 씀)
     if (e.button === 2) { e.preventDefault(); setStamp(false); return; }
     if (e.button !== 0 || !onDesktop(e)) return;
     e.preventDefault();
     e.stopPropagation();
+    // Stamp 아이콘 위를 누르면 끄기
+    if (icon.contains(document.elementFromPoint(e.clientX, e.clientY))) {
+        offAt = performance.now();
+        setStamp(false);
+        return;
+    }
     stamp(e);
 }, true);
 // 붙일 때 아이콘 클릭(선택·효과음)도 막기

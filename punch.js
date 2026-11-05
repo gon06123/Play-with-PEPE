@@ -4,7 +4,7 @@
 //  - script.js 는 건드리지 않아도 돼요 (script.js 다음 줄에서 불러오기)
 //  - 사이트 소리 버튼(음소거)을 그대로 따라가요
 //
-//  창 테두리 없이 페페 그림 + 오른쪽 세로 소리 바만 떠요 (소리 바의 VOLUME 을 끌면 이동 · × = 닫기)
+//  창 테두리 없이 페페 그림 + 오른쪽 세로 소리 바만 떠요 (소리 바의 소리 아이콘을 끌면 이동 · × = 닫기 · ? = 도움말)
 //
 //  조작 : 페페 클릭할 때마다 다음 단계
 //         1) 비명 : REEE 소리가 점점 커지고, 페페가 커지며 덜덜 떨고, 화면이 빨개짐
@@ -79,8 +79,9 @@ root.innerHTML = `
     </div>
     <div class="punch-vol bevel">
         <button class="btn punch-x" type="button" title="닫기">×</button>
-        <span class="punch-grip" title="끌어서 옮기기">VOLUME</span>
-        <label class="punch-slider" title="VOLUME"><input type="range" min="0" max="100" step="1" value="${VOL_BASE}" aria-label="VOLUME"></label>
+        <button class="btn punch-x btn-help" type="button">?</button>
+        <span class="punch-grip" title="끌어서 옮기기"><img src="images/soundon.png" alt="소리 크기"></span>
+        <label class="punch-slider" title="소리 크기"><input type="range" min="0" max="100" step="1" value="${VOL_BASE}" aria-label="소리 크기"></label>
         <output>${VOL_BASE}</output>
     </div>`;
 
@@ -107,11 +108,15 @@ const isMuted = () => typeof muted !== 'undefined' && muted;   // script.js 의 
 
 const volIn  = root.querySelector('.punch-vol input');
 const volOut = root.querySelector('.punch-vol output');
+const volIcon = root.querySelector('.punch-grip img');
 
-// 창 테두리·제목줄이 없어서 : 오른쪽 세로 소리 바의 "VOLUME" 을 끌면 이동, × 로 닫기 (script.js 의 창 기능)
+// 창 테두리·제목줄이 없어서 : 오른쪽 세로 소리 바의 소리 아이콘을 끌면 이동, × 로 닫기 (script.js 의 창 기능)
 if (win) {
     makeDraggable(win, root.querySelector('.punch-grip'));
     root.querySelector('.punch-x').addEventListener('click', () => closeWindow(win));
+    // 제목줄이 없어서 ? 도 소리 바에 (도움말 글은 index.html 의 data-help)
+    if (win.dataset.help) setHelp(root.querySelector('.btn-help'), win.dataset.help);
+    else root.querySelector('.btn-help').remove();
 }
 
 let state = 'initial';  // initial → screaming → beaten → cry → initial
@@ -131,6 +136,7 @@ function show(n) {
 function setVolume() {
     volOut.textContent = volIn.value;
     master = volIn.value / 100;
+    volIcon.src = master ? 'images/soundon.png' : 'images/soundoff.png';   // 0 이면 꺼진 소리 아이콘
     crySnd.volume = master;   // 울음소리는 나는 중에도 바로 바뀜 (비명은 scream 에서 매 프레임 반영)
     try { localStorage.setItem(VOL_KEY, volIn.value); } catch (e) {}
 }

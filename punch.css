@@ -70,7 +70,7 @@
     mask: center / contain no-repeat;
 }
 
-/* 소리 바 : 오른쪽에 세로로 선 얇은 회색 입체 막대 (위 → 아래 : × · VOLUME · 슬라이더 · 숫자)
+/* 소리 바 : 오른쪽에 세로로 선 얇은 회색 입체 막대 (위 → 아래 : × · ? · 소리 아이콘 · 슬라이더 · 숫자)
    너비는 × 버튼에 딱 맞춤 · 슬라이더 모양은 style.css 의 공통 range 스타일 */
 .punch-vol {
     position: relative;
@@ -84,12 +84,17 @@
     font-size: 0.95rem;
     font-weight: bold;
 }
+/* 소리 아이콘 (바탕화면 소리 버튼과 같은 그림) : 끌면 창 이동 */
 .punch-grip {
-    width: 2rem;
-    line-height: 2rem;      /* 세로 글자를 칸 가운데로 */
-    padding: 0.4rem 0;
-    writing-mode: vertical-rl;   /* 글자도 세로로 */
+    width: 2.2rem;
+    padding: 0.2rem 0;
     cursor: move;
+}
+.window-body .punch-grip img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;   /* 그림이 따로 끌려가지 않게 */
 }
 /* 가로 슬라이더를 -90도 돌려서 세로로 (위로 올리면 커짐) · 길이 = 칸 높이(100cqh) */
 .punch-slider {
@@ -106,13 +111,19 @@
     transform: translate(-50%, -50%) rotate(-90deg);
 }
 .punch-vol output { text-align: center; }
+/* × : 다른 창 제목줄의 닫기 버튼(style.css 의 .title-bar .btn-close)과 똑같은 모양 */
 .punch-x {
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
+    width: 1.85rem;
+    height: 1.65rem;
+    padding: 0 0 0.12rem;   /* 글자가 아래로 치우쳐 보여서 살짝 위로 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.65rem;
     font-weight: bold;
     line-height: 1;
 }
+.punch-x.btn-help { font-size: 1.15rem; padding: 0; cursor: help; }   /* 다른 창 제목줄의 ? 와 같은 글자 크기 */
 
 /* 창을 뚫고 화면 전체로 번지는 빨강 (body 에 붙음 · 원 크기·진하기는 punch.js 가 줌)
    곱하기 → 바탕화면·다른 창이 빨갛게 물듦 · 클릭은 그대로 통과 */

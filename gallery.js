@@ -3,6 +3,7 @@
 //  - index.html 의 <div id="gallery-root"> 안 <ul class="gallery-src"> 목록을 읽어서 화면을 만들어요
 //  - script.js 는 건드리지 않아도 돼요 (script.js 다음 줄에서 불러오기)
 //  - Pepe Explorer 에서 "갤러리에 저장" 한 짤도 여기 들어와요 (브라우저에 저장돼서 새로고침해도 남음)
+//  - 여기 사진 전부 BGpaint 의 스티커 목록에도 나와요 (script.js 의 그림판이 가져감)
 //
 //  조작 : 썸네일 클릭 = 선택 · 더블클릭(또는 Enter) = 크게 보기
 //         크게 보기에서 ◀ ▶ 버튼 또는 ← → 키 = 넘기기 · Esc / 닫기 = 폴더로
@@ -176,6 +177,15 @@ document.addEventListener('gallery:add', e => {
     select(selected);   // 다시 그려도 고르던 사진은 그대로 (새 짤은 맨 뒤에 붙음)
     showStatus(`${name} 저장됨`);
     e.detail.result = 'saved';
+});
+
+/* =========================================================
+   다른 앱에서 사진 목록 가져가기 (그림판 스티커) :
+   const req = { photos: [] }; document.dispatchEvent(new CustomEvent('gallery:list', { detail: req }))
+   → req.photos = [{ src, thumb, name }, …]
+   ========================================================= */
+document.addEventListener('gallery:list', e => {
+    e.detail.photos = photos.map(({ src, thumb, name }) => ({ src, thumb, name }));
 });
 
 render();

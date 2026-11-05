@@ -313,6 +313,24 @@ body {
     padding-bottom: 0.12rem;   /* 글자가 아래로 치우쳐 보여서 살짝 위로 */
 }
 
+/* 도움말 ? : 옛날 윈도우처럼 _ □ × 앞에 따로 떨어져 있음 */
+.title-bar .btn-help { margin-right: 0.22rem; cursor: help; }
+
+/* 도움말 말풍선 (script.js 의 "도움말 말풍선") : 옛날 윈도우 노란 툴팁 · 글의 줄바꿈 그대로 */
+#help-tip {
+    position: fixed;
+    z-index: 30000;         /* 창·작업표시줄·빨강 효과보다 위 */
+    max-width: 26rem;
+    padding: 0.35rem 0.55rem;
+    background: #ffffe1;
+    border: 1px solid #000;
+    box-shadow: 0.15rem 0.15rem 0 rgba(0, 0, 0, .35);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    white-space: pre-line;
+    pointer-events: none;
+}
+
 /* 최소화 아이콘 : 왼쪽 아래에 붙은 짧은 굵은 막대 */
 .title-bar .btn-min {
     margin-left: 0.18rem;
@@ -754,7 +772,43 @@ body.drunk { background: #5b3fc9; }
 /* 그림판 : 바탕화면 배경 사진 위에 투명 캔버스를 올려 그림 (배경 사진은 script.js 가 #desktop 것을 그대로 가져옴)
    칸 비율 = 바탕화면 비율 (script.js 가 맞춤) → 저장했을 때 그림이 배경과 같은 자리에 딱 맞음 */
 #win-paint { width: 66rem; height: auto; resize: horizontal; }
-.paint-area { flex: none; background: #fff center top / cover; }
+.paint-area { position: relative; flex: none; background: #fff center top / cover; }
+
+/* 스티커 (script.js 의 "스티커") : 캔버스 위에 따로 올라가는 갤러리 사진 · 바탕화면에 저장된 것도 같은 모양
+   위치(가운데 기준)·너비는 칸 기준 % */
+.paint-stickers {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.paint-stickers img,
+.window-body .paint-stickers img {
+    position: absolute;
+    max-width: none;
+    height: auto;
+    transform: translate(-50%, -50%);
+    user-select: none;
+}
+.paint-area.sticking .paint-stickers img { pointer-events: auto; cursor: move; }
+.paint-area.sticking #paint-canvas { cursor: copy; }
+
+/* 스티커로 고를 갤러리 사진 목록 (가로로 쭉 · 넘치면 옆으로 스크롤) */
+.paint-pick {
+    flex: none;             /* 창 안 공간이 모자라도 이 줄은 안 줄어듦 (안 그러면 높이 0 이 돼서 안 보임) */
+    display: flex;
+    gap: 0.3rem;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+}
+.paint-pick[hidden] { display: none; }
+.paint-pick .btn {
+    flex: none;
+    width: 3.6rem;
+    height: 3.6rem;
+    padding: 0.2rem;
+}
+.paint-pick img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
 #paint-canvas {
     display: block;
@@ -1149,17 +1203,21 @@ body.drunk { background: #5b3fc9; }
 }
 
 /* 바탕화면 스크롤바(#scrollbar)와 똑같이 : 체크무늬 길 + 위·아래 화살표 버튼
-   쓰는 곳 : What is PEPE 창 · Gallery 사진 칸 (다른 칸에도 쓰려면 선택자만 추가) */
+   쓰는 곳 : What is PEPE 창 · Gallery 사진 칸 · 그림판 스티커 목록(가로) (다른 칸에도 쓰려면 선택자만 추가) */
 #win-whatispepe .window-body::-webkit-scrollbar,
-.gal-grid::-webkit-scrollbar { width: var(--scrollbar-w); height: var(--scrollbar-w); }
+.gal-grid::-webkit-scrollbar,
+.paint-pick::-webkit-scrollbar { width: var(--scrollbar-w); height: var(--scrollbar-w); }
 #win-whatispepe .window-body::-webkit-scrollbar-track,
-.gal-grid::-webkit-scrollbar-track {
+.gal-grid::-webkit-scrollbar-track,
+.paint-pick::-webkit-scrollbar-track {
     background: repeating-conic-gradient(var(--gray) 0 25%, #fff 0 50%) 0 0 / 2px 2px;
 }
 #win-whatispepe .window-body::-webkit-scrollbar-thumb,
 .gal-grid::-webkit-scrollbar-thumb,
+.paint-pick::-webkit-scrollbar-thumb,
 #win-whatispepe .window-body::-webkit-scrollbar-button,
-.gal-grid::-webkit-scrollbar-button {
+.gal-grid::-webkit-scrollbar-button,
+.paint-pick::-webkit-scrollbar-button {
     background-color: var(--gray);
     border: var(--bv) solid;
     border-color: var(--light) var(--dark) var(--dark) var(--light);
@@ -1185,8 +1243,24 @@ body.drunk { background: #5b3fc9; }
     background: var(--gray) no-repeat center / 0.8rem 0.4rem
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1'%3E%3Cpath d='M0 0L2 0L1 1z'/%3E%3C/svg%3E");
 }
+/* 가로 스크롤바 화살표 : 왼쪽(◀) 하나 · 오른쪽(▶) 하나만 */
+.paint-pick::-webkit-scrollbar-button:horizontal:start:increment,
+.paint-pick::-webkit-scrollbar-button:horizontal:end:decrement { display: none; }
+.paint-pick::-webkit-scrollbar-button:horizontal:start:decrement {
+    display: block;
+    width: var(--scrollbar-w);
+    background: var(--gray) no-repeat center / 0.4rem 0.8rem
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 2'%3E%3Cpath d='M1 0L0 1L1 2z'/%3E%3C/svg%3E");
+}
+.paint-pick::-webkit-scrollbar-button:horizontal:end:increment {
+    display: block;
+    width: var(--scrollbar-w);
+    background: var(--gray) no-repeat center / 0.4rem 0.8rem
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 2'%3E%3Cpath d='M0 0L1 1L0 2z'/%3E%3C/svg%3E");
+}
 #win-whatispepe .window-body::-webkit-scrollbar-button:active,
-.gal-grid::-webkit-scrollbar-button:active {
+.gal-grid::-webkit-scrollbar-button:active,
+.paint-pick::-webkit-scrollbar-button:active {
     border-color: var(--dark) var(--light) var(--light) var(--dark);
     box-shadow: inset var(--bv) var(--bv) var(--shadow);
 }

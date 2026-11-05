@@ -1,10 +1,11 @@
 // =========================================================
-//  Pepe Chrome : 인터넷이 끊긴 브라우저 + 출근길 페페 달리기 (원본 : runner-test.html)
+//  Pepe Chrome : 인터넷이 끊긴 브라우저 + 출근길 페페 달리기
 //  - index.html 의 <div id="chrome-root"> 안에 화면을 자동으로 만들어요
 //  - script.js 는 건드리지 않아도 돼요 (script.js 다음 줄에서 불러오기)
 //  - 사이트 소리 버튼(음소거)을 그대로 따라가요
 //
 //  조작 : 스페이스 / ↑ / 화면 클릭 = 점프 (키보드는 이 창이 맨 앞일 때만)
+//  장애물 : 땅 (바나나·웅덩이·꼬깔·쓰레기통) + 하늘 (까마귀 : 낮게 날면 점프, 높게 날면 점프하지 말고 밑으로)
 //  규칙 : 장애물에 부딪히면 멘탈(하트) 1칸 감소 · 3칸 다 없어지면 끝
 //         창을 내리거나 닫으면 일시정지
 // =========================================================
@@ -39,6 +40,8 @@ const COLORS = {
     S: '#a7adb3',   // 쓰레기통 회색
     N: '#7d848a',   // 쓰레기통 줄무늬
     Q: '#535353',   // 크롬 회색 (다시하기 화살표)
+    F: '#2b2b3a',   // 새 (까마귀 검정)
+    I: '#ffb020',   // 새 부리
 };
 
 // 페페 얼굴 : 하트가 줄수록 다음 얼굴로 바뀌고 그대로 유지됨 (점점 일그러짐)
@@ -150,6 +153,31 @@ const TRASH = [
     '.KSSSSSSK.',
     '..KKKKKK..',
 ];
+// 하늘 장애물 : 개구리 천적 까마귀 (왼쪽 = 머리 · 날개 위/아래 두 장 번갈아 퍼덕퍼덕)
+const BIRD_UP = [
+    '.......FF.......',
+    '.......FFF......',
+    '........FFF.....',
+    '..FF....FFFF....',
+    'IFWBFFFFFFFFFF..',
+    '.IIFFFFFFFFFFFFF',
+    '...FFFFFFFFF.FF.',
+    '......FF........',
+    '................',
+    '................',
+];
+const BIRD_DOWN = [
+    '................',
+    '................',
+    '................',
+    '..FF............',
+    'IFWBFFFFFFFFFF..',
+    '.IIFFFFFFFFFFFFF',
+    '...FFFFFFFFF.FF.',
+    '.......FFFF.....',
+    '........FFF.....',
+    '.........FF.....',
+];
 const HEART = [
     '.HH.HH.',
     'HHHHHHH',
@@ -177,11 +205,16 @@ const PX = 4;               // 픽셀 한 칸 = 화면 4px (캔버스 기준)
 const LIVES = 3;            // 멘탈 하트 개수
 const GRAVITY = 2200;       // 떨어지는 힘
 const JUMP = 640;           // 점프 힘
-const SPEED_START = 360;    // 처음 달리는 속도 (px/초)
-const SPEED_MAX = 780;      // 최대 속도
-const SPEED_UP = 10;        // 1초마다 빨라지는 양
-const GAP_MIN = 0.7, GAP_MAX = 1.4;   // 장애물 사이 간격 (초 단위 : 0.7 ~ 1.4초마다 하나)
-const DOUBLE = 0.3;         // 장애물 두 개가 붙어서 나올 확률 (0 ~ 1)
+const SPEED_START = 380;    // 처음 달리는 속도 (px/초)
+const SPEED_MAX = 1050;     // 최대 속도
+const SPEED_UP = 14;        // 1초마다 빨라지는 양 (약 48초면 최대 속도)
+// ▼ 난이도 : 속도가 오를수록 처음 값 → 최대 속도일 때 값으로 점점 바뀜
+const GAP_MIN = [0.75, 0.6], GAP_MAX = [1.4, 0.85];   // 장애물 사이 간격 (초)
+const DOUBLE = [0.2, 0.5];  // 장애물 두 개가 붙어서 나올 확률 (0 ~ 1)
+const TRIPLE = [0, 0.25];   // 세 개가 붙어서 나올 확률 (속도가 절반 넘게 올라야 나옴 : 느릴 땐 못 넘어서)
+const BIRD = [0.12, 0.3];   // 땅 장애물 대신 새가 날아올 확률
+const BIRD_HIGH = 0.5;      // 그중 높이 나는 새 비율 : 높은 새 = 점프하면 부딪힘 (그냥 달려서 밑으로 지나가기)
+                            //                         낮은 새 = 땅 장애물처럼 점프로 넘기
 const HURT_SEC = 1;         // 부딪힌 뒤 무적 시간 (깜빡깜빡)
 const INTRO_SEC = 0.5;      // 처음 시작할 때 땅이 화면 끝까지 쭉 펼쳐지는 시간
 const GRAY = '#535353';     // 크롬 공룡 화면 회색 (땅 · 점수 · 글자)
@@ -243,6 +276,8 @@ const IMG = {
 };
 // 장애물 : 같은 그림을 여러 번 넣으면 그만큼 자주 나옴 (키 큰 꼬깔·쓰레기통이 더 자주)
 const OBSTACLES = [BANANA, PUDDLE, CONE, CONE, TRASH, TRASH].map(sprite);
+const BIRD_FRAMES = [sprite(BIRD_UP), sprite(BIRD_DOWN)];
+const BIRD_BODY = [3 * PX, 7 * PX];   // 새 몸통 줄 (부딪힘 판정 위·아래 · 날개는 판정 안 함)
 
 /* =========================================================
    게임
@@ -284,25 +319,45 @@ function update(dt) {
     pepe.y = Math.min(GROUND, pepe.y + pepe.vy * dt);
     if (pepe.y >= GROUND) pepe.vy = 0;
 
-    // 장애물 : 일정 시간마다 하나씩 · 가끔 두 개가 딱 붙어서 (한 번에 넘어야 함)
+    // 장애물 : 일정 시간마다 새 한 마리 또는 땅 장애물 1~3개 (붙어 나오면 한 번에 넘어야 함)
+    //          빨라질수록 간격은 좁아지고 여러 개 붙어 나올 확률은 올라감
     nextGap -= speed * dt;
     if (nextGap <= 0) {
+        const lv = (speed - SPEED_START) / (SPEED_MAX - SPEED_START);   // 난이도 0 ~ 1
+        const at = ([a, b]) => a + (b - a) * lv;
         const pick = () => OBSTACLES[Math.floor(Math.random() * OBSTACLES.length)];
-        const img = pick();
-        obstacles.push({ img, x: W, hit: false });
-        if (Math.random() < DOUBLE) obstacles.push({ img: pick(), x: W + img.width + 4, hit: false });
-        nextGap = speed * (GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN));
+        let x = W;
+        const r = Math.random();
+        if (Math.random() < at(BIRD)) {
+            // 새는 혼자 날아옴 · 높은 새는 서 있는 페페 머리 바로 위, 낮은 새는 점프로 넘을 높이
+            const [b1, b2] = BIRD_BODY;
+            const bottom = Math.random() < BIRD_HIGH ? GROUND - 76 : GROUND - 24;   // 몸통 아랫면
+            const img = BIRD_FRAMES[0];
+            obstacles.push({ img, frames: BIRD_FRAMES, x, y: bottom - b2, box: [4, b1, img.width - 4, b2], hit: false });
+            x += img.width;
+        } else {
+            const tri = lv > 0.5 ? at(TRIPLE) : 0;   // 느릴 땐 세 개짜리 없음 (한 번에 못 넘음)
+            const count = r < tri ? 3 : r < tri + at(DOUBLE) ? 2 : 1;
+            for (let i = 0; i < count; i++) {
+                const img = pick();
+                obstacles.push({ img, x, y: GROUND - img.height, box: [4, 4, img.width - 4, img.height], hit: false });
+                x += img.width + 4;
+            }
+        }
+        const gMin = at(GAP_MIN), gMax = at(GAP_MAX);
+        nextGap = (x - W) + speed * (gMin + Math.random() * (gMax - gMin));
+        nextGap += speed * 0.25;   // 다음 게 높은 새일 수도 있어서 : 점프하고 착지할 여유 조금 더
     }
     obstacles.forEach(o => o.x -= speed * dt);
     obstacles = obstacles.filter(o => o.x + o.img.width > 0);
 
     // 부딪힘 (그림보다 조금 작은 상자로 판정해서 억울하지 않게)
-    const pw = PEPE[0].runA.width;
-    const px1 = pepe.x + 12, px2 = pepe.x + pw - 16, py2 = pepe.y;
+    const pw = PEPE[0].runA.width, ph = PEPE[0].runA.height;
+    const px1 = pepe.x + 12, px2 = pepe.x + pw - 16, py1 = pepe.y - ph + 8, py2 = pepe.y;
     obstacles.forEach(o => {
         if (o.hit || hurt > 0) return;
-        const ox1 = o.x + 4, ox2 = o.x + o.img.width - 4, oy1 = GROUND - o.img.height + 4;
-        if (px2 > ox1 && px1 < ox2 && py2 > oy1) {
+        const ox1 = o.x + o.box[0], oy1 = o.y + o.box[1], ox2 = o.x + o.box[2], oy2 = o.y + o.box[3];
+        if (px2 > ox1 && px1 < ox2 && py2 > oy1 && py1 < oy2) {
             o.hit = true;
             lives--;
             hurt = HURT_SEC;
@@ -343,8 +398,11 @@ function draw(t) {
     for (let x = -groundX; x < W; x += 24) ctx.fillRect(x, GROUND + 5 + (x * 7 % 3) * 2, 6, 2);
     ctx.restore();
 
-    // 장애물
-    obstacles.forEach(o => ctx.drawImage(o.img, Math.round(o.x), GROUND - o.img.height));
+    // 장애물 (새는 날개 두 장 번갈아 퍼덕퍼덕)
+    obstacles.forEach(o => {
+        const img = o.frames ? o.frames[Math.floor(t / 150) % 2] : o.img;
+        ctx.drawImage(img, Math.round(o.x), Math.round(o.y));
+    });
 
     // 페페 : 잃은 하트만큼 얼굴이 일그러진 채로 유지 (끝나면 가장 많이 우는 얼굴)
     //        땅에서는 다리 두 장 번갈아, 공중에선 점프 자세
